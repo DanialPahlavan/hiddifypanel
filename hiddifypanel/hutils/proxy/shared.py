@@ -411,6 +411,10 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
         'dbdomain': domain_db,
         'params': proxy.params or {},
     }
+    if proxy.params:
+        for k, v in proxy.params.items():
+            if k != "download":
+                base[k] = v
     extra_params_json=domain_db.extra_params_json()
 
     if base["proto"]==ProxyProto.dnstt:

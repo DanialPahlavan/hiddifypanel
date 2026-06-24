@@ -226,7 +226,7 @@ def to_link(proxy: dict) -> str | dict:
         q['ech'] = proxy['ech']
     if proxy.get('transport') not in {ProxyTransport.xhttp}:
         for k, v in proxy.get('params', {}).items():
-            if k not in q and k != "download":
+            if k != "download":
                 q[k] = v
     return f"{baseurl}?{urlencode(q, quote_via=quote)}#{name_link}"
 

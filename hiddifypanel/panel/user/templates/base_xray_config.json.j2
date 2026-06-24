@@ -5,6 +5,12 @@
     "error": "",
     "loglevel": "warning"
   },
+  "dns": {
+    "servers": [
+      "https+local://{{ hconfig(ConfigEnum.dns_server) or '1.1.1.1' }}/dns-query",
+      "localhost"
+    ]
+  },
   "inbounds": [
     {
       "tag": "socks",
