@@ -240,7 +240,7 @@ def _add_security(base_dict, proxy, tls_info=None):
     elif ss['security'] in ['tls', "xtls"] and proxy['proto'] != ProxyProto.ss:
         ss['tlsSettings'] = {
             'serverName': tls_info['sni'],
-            'allowInsecure': tls_info['allow_insecure'],
+            # 'allowInsecure': tls_info['allow_insecure'],
             'fingerprint': proxy.get('fingerprint'),
             'alpn': [tls_info['alpn']],
             # 'minVersion': '1.2',
