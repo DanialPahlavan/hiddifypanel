@@ -367,6 +367,9 @@
   "cf-delete": {
     "failed": "cf-delete.failed"
   },
+  "cf-update": {
+    "failed": "cf-update.failed"
+  },
   "child has been removed!": "پنل زیر مجموعه حذف شد",
   "child": {
     "register-failed": "child.register-failed",

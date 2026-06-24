@@ -368,6 +368,9 @@
   "cf-delete": {
     "failed": "cf-delete.failed"
   },
+  "cf-update": {
+    "failed": "cf-update.failed"
+  },
   "child has been removed!": "Child Has Been Removed!",
   "child": {
     "register-failed": "child.register-failed",

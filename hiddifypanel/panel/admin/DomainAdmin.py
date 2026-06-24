@@ -236,13 +236,20 @@ class DomainAdmin(AdminLTEModelView):
         if hconfig(ConfigEnum.cloudflare) and model.mode not in [DomainType.fake, DomainType.relay, DomainType.reality]:
             try:
                 proxied = model.mode in [DomainType.cdn, DomainType.auto_cdn_ip]
+                updated = True
                 if ipv4_list:
-                    hutils.network.cf_api.add_or_update_dns_record(model.domain, str(ipv4_list[0]), "A", proxied=proxied)
+                    if not hutils.network.cf_api.add_or_update_dns_record(model.domain, str(ipv4_list[0]), "A", proxied=proxied):
+                        updated = False
                 if ipv6_list:
-                    hutils.network.cf_api.add_or_update_dns_record(model.domain, str(ipv6_list[0]), "AAAA", proxied=proxied)
+                    if not hutils.network.cf_api.add_or_update_dns_record(model.domain, str(ipv6_list[0]), "AAAA", proxied=proxied):
+                        updated = False
+                if not updated:
+                    hutils.flask.flash(_('cf-update.failed'), 'warning')
+                    return False
                 return True
             except Exception as e:
-                raise ValidationError(__("cloudflare.error") + f' {e}')
+                hutils.flask.flash(__("cloudflare.error") + f' {e}', 'warning')
+                return False
         return False
 
     def _validate_reality_settings(self, model, server_ips):
