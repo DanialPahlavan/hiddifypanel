@@ -53,6 +53,8 @@ def delete_dns_record(domain: str) -> bool:
 
     zone_name = __extract_root_domain(domain)
     zone = __get_zone(zone_name)
+    if not zone:
+        return False
     records = [__get_dns_record(zone, domain,"A"),__get_dns_record(zone, domain,"AAAA")]
     res=False
     
