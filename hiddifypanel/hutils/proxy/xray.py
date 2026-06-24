@@ -207,7 +207,7 @@ def to_link(proxy: dict) -> str | dict:
             q['headerType'] = 'http'
 
     if proxy['mode'] == 'Fake' or proxy['allow_insecure']:
-        q['allowInsecure'] = 'true'
+        # q['allowInsecure'] = 'true'
         q['insecure'] = 'true'
     if proxy.get('flow'):
         q['flow'] = proxy["flow"]
