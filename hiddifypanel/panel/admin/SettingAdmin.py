@@ -21,7 +21,7 @@ from hiddifypanel.cache import cache
 from hiddifypanel.database import db
 from hiddifypanel.hutils.flask import hurl_for
 from hiddifypanel.models import *
-from hiddifypanel.models import BoolConfig, ConfigCategory, ConfigEnum, StrConfig, hconfig
+from hiddifypanel.models import BoolConfig, ConfigCategory, ConfigEnum, StrConfig, hconfig, config_enum
 from hiddifypanel.panel import custom_widgets, hiddify
 
 ALLOWED_TAGS = set([*BLEACH_ALLOWED_TAGS, "h1", "h2", "h3", "h4", "p"])

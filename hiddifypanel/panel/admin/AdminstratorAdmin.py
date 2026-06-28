@@ -175,7 +175,7 @@ class AdminstratorAdmin(AdminLTEModelView):
 
     # @login_required(roles={Role.super_admin, Role.admin})
     def is_accessible(self):
-        if not login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)():
+        if login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)() != True:
             return False
         return True
 

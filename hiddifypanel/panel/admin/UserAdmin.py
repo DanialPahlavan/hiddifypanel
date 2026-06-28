@@ -216,7 +216,7 @@ class UserAdmin(AdminLTEModelView):
         # hutils.flask.flash_config_success()
 
     def is_accessible(self):
-        if not login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)():
+        if login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)() != True:
             return False
         return True
 

@@ -367,7 +367,7 @@ class DomainAdmin(AdminLTEModelView):
             hutils.node.run_node_op_in_bg(hutils.node.child.sync_with_parent, *[hutils.node.child.SyncFields.domains])
 
     def is_accessible(self):
-        if not login_required(roles={Role.super_admin, Role.admin})(lambda: True)():
+        if login_required(roles={Role.super_admin, Role.admin})(lambda: True)() != True:
             return False
         return True
 
