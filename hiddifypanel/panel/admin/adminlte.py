@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
-from hiddifypanel import auth
 from flask_admin.form import SecureForm
 
+from hiddifypanel import auth
 
 
 class AdminLTEModelView(ModelView):

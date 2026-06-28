@@ -1,7 +1,9 @@
 import os
-from .abstract_driver import DriverABS
-from hiddifypanel.models import *
+
 import redis
+from hiddifypanel.models import *
+
+from .abstract_driver import DriverABS
 
 USERS_SET = "ssh-server:users"
 USERS_USAGE = "ssh-server:users-usage"

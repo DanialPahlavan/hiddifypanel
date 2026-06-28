@@ -1,5 +1,5 @@
 import os
-import sys
+
 from celery import Celery, Task
 from celery.schedules import crontab
 from dotenv import dotenv_values
@@ -13,7 +13,7 @@ def init_app(app):
                 return self.run(*args, **kwargs)
 
     celery_app = Celery(app.name, task_cls=FlaskTask)
-    
+
     celery_app.config_from_object(dict(
         broker_url=app.config['REDIS_URI_MAIN'],
         result_backend=app.config['REDIS_URI_MAIN'],
@@ -28,7 +28,7 @@ def init_app(app):
     # celery_app.conf.beat_schedule = {
     # 'update_usage': {
     #     'task': 'hiddifypanel.panel.usage.update_local_usage',
-    #     'schedule': 30.0, 
+    #     'schedule': 30.0,
 
     # },
 # }
@@ -45,7 +45,7 @@ def init_app(app):
         backup_task.s(),
         name="backup_task "
     )
-    
+
     celery_app.set_default()
     return celery_app
 
@@ -59,7 +59,7 @@ def init_app_no_flask():
         else:
             v = True if v.lower() == "true" else (False if v.lower() == "false" else v)
         config[c] = v
-    import hiddifypanel.database 
+    import hiddifypanel.database
     hiddifypanel.database.init_no_flask()
 
     from hiddifypanel.panel import init_db
@@ -67,26 +67,26 @@ def init_app_no_flask():
         logger.error("The database upgrade is required before proceeding. Retrying...")
         import time
         time.sleep(20)
-    
+
     logger.info("Starting background tasks")
 
     celery_app = Celery()
-    
+
     celery_app.config_from_object(dict(
         broker_url=config['REDIS_URI_MAIN'],
         result_backend=config['REDIS_URI_MAIN'],
         # task_ignore_result=True,
     ))
-    
 
-    
+
+
         # Calls test('hello') every 10 seconds.
     from hiddifypanel.panel import usage
     celery_app.add_periodic_task(60.0, usage.update_local_usage.s(), name='update usage')
     # celery_app.conf.beat_schedule = {
     # 'update_usage': {
     #     'task': 'hiddifypanel.panel.usage.update_local_usage',
-    #     'schedule': 30.0, 
+    #     'schedule': 30.0,
 
     # },
 # }
@@ -104,10 +104,9 @@ def init_app_no_flask():
         backup_task.s(),
         name="backup_task "
     )
-    
+
     celery_app.set_default()
-    
+
     return celery_app
 
 
-    

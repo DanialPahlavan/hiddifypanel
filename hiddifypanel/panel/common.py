@@ -1,22 +1,21 @@
 import traceback
-from flask import render_template, request, jsonify
-from flask import g, send_from_directory, session
-from flask_babel import gettext as _
+
+from apiflask import APIFlask, HTTPError, abort
+from flask import g, jsonify, render_template, request, send_from_directory, session
+from loguru import logger
+
 import hiddifypanel
+import hiddifypanel.auth as auth
+from hiddifypanel import hutils
+from hiddifypanel.auth import current_account
 from hiddifypanel.models import *
 from hiddifypanel.panel import hiddify
-from hiddifypanel import hutils
-import hiddifypanel.auth as auth
-from hiddifypanel.auth import current_account
-from apiflask import APIFlask, HTTPError, abort
-from hiddifypanel import hutils
-from loguru import logger
 
 
 def init_app(app: APIFlask):
     # Initialize centralized exception logging with rotation
     logger.add("logs/panel-error.log", rotation="10 MB", retention="7 days", level="ERROR", backtrace=True, diagnose=True)
-    
+
     app.jinja_env.globals['ConfigEnum'] = ConfigEnum
     app.jinja_env.globals['DomainType'] = DomainType
     app.jinja_env.globals['UserMode'] = UserMode
@@ -27,7 +26,7 @@ def init_app(app: APIFlask):
     app.jinja_env.globals['version'] = hiddifypanel.__version__
     if not hiddifypanel.is_released_version:
         app.jinja_env.globals['version']= "DEV"
-    
+
     app.jinja_env.globals['static_url_for'] = hutils.flask.static_url_for
     app.jinja_env.globals['hurl_for'] = hutils.flask.hurl_for
     app.jinja_env.globals['_gettext'] = lambda x: print("==========", x)
@@ -47,7 +46,7 @@ def init_app(app: APIFlask):
             logger.error(f'{e} {request.url}')
         else:
             logger.exception(e)
-        
+
         if isinstance(e, Exception):
             if hutils.flask.is_api_call(request.path):
                 return jsonify({

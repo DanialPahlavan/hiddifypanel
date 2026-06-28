@@ -1,10 +1,13 @@
 import datetime
 import json
-from flask import request, g
-from hiddifypanel import hutils
-from hiddifypanel.models import ProxyTransport, ProxyL3, ProxyProto, Domain, User, ConfigEnum, hconfig
+from urllib.parse import quote, urlencode
+
+from flask import g, request
 from flask_babel import gettext as _
-from urllib.parse import urlencode, quote
+
+from hiddifypanel import hutils
+from hiddifypanel.models import ConfigEnum, Domain, ProxyL3, ProxyProto, ProxyTransport, User, hconfig
+
 OUTBOUND_LEVEL = 8
 
 
@@ -236,7 +239,7 @@ def make_v2ray_configs(domains: list[Domain], user: User, expire_days: int, ip_d
 
     if hconfig(ConfigEnum.show_usage_in_sublink) and not g.user_agent.get('is_hiddify'):
 
-        fake_ip_for_sub_link = datetime.datetime.now().strftime(f"%H.%M--%Y.%m.%d.time:%H%M")
+        fake_ip_for_sub_link = datetime.datetime.now().strftime("%H.%M--%Y.%m.%d.time:%H%M")
         # if ua['app'] == "Fair1":
         #     res.append(f'trojan://1@{fake_ip_for_sub_link}?sni=fake_ip_for_sub_link&security=tls#{round(user.current_usage_GB,3)}/{user.usage_limit_GB}GB_Remain:{expire_days}days')
         # else:
@@ -252,7 +255,7 @@ def make_v2ray_configs(domains: list[Domain], user: User, expire_days: int, ip_d
             res.append("#No Usage Limit")
         name += " 📅 "
         if expire_days < 1000:
-            name += _(f'%(expire_days)s days', expire_days=expire_days)
+            name += _('%(expire_days)s days', expire_days=expire_days)
         else:
             res.append("#No Time Limit")
 

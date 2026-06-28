@@ -1,17 +1,14 @@
 import datetime
 from enum import auto
 from uuid import uuid4
-from hiddifypanel.models.role import Role
-from dateutil import relativedelta
 
-from strenum import StrEnum
 from sqlalchemy import event
+from strenum import StrEnum
 
 from hiddifypanel.database import db
-from hiddifypanel.models import Lang
-from hiddifypanel.models.base_account import BaseAccount
 from hiddifypanel.models.admin import AdminUser
-
+from hiddifypanel.models.base_account import BaseAccount
+from hiddifypanel.models.role import Role
 
 ONE_GIG = 1024 * 1024 * 1024
 
@@ -300,7 +297,7 @@ class User(BaseAccount):
         if dump_id:
             base['id'] = self.id
         if not base.get('lang'):
-            from hiddifypanel.models import hconfig, ConfigEnum
+            from hiddifypanel.models import ConfigEnum, hconfig
             base['lang'] = hconfig(ConfigEnum.lang)
         return {**base,
                 'last_online': hutils.convert.time_to_json(self.last_online) if convert_date else self.last_online,

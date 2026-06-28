@@ -1,11 +1,11 @@
 import json
 import os
 
-from .abstract_driver import DriverABS
-from hiddifypanel.models import User, hconfig, ConfigEnum
-from hiddifypanel.panel.run_commander import Command, commander
 import redis
+from hiddifypanel.models import ConfigEnum, User, hconfig
+from hiddifypanel.panel.run_commander import Command, commander
 
+from .abstract_driver import DriverABS
 
 USERS_USAGE = "wg:users-usage"
 
@@ -40,7 +40,7 @@ class WireguardApi(DriverABS):
                 if uuid:=self.pub_uuid_map.get(key):
                     res[key]=uuid
         return res
-            
+
     def __get_wg_usages(self) -> dict:
         raw_output = commander(Command.update_wg_usage, run_in_background=False)
         data = {}
@@ -54,7 +54,7 @@ class WireguardApi(DriverABS):
                 'down': int(sections[1]),
                 'up': int(sections[2]),
             }
-        
+
         return data
 
     def __get_local_usage(self) -> dict:
@@ -67,18 +67,18 @@ class WireguardApi(DriverABS):
     def __sync_local_usages(self) -> dict:
         local_usage = self.__get_local_usage()
         wg_usage = self.__get_wg_usages()
-        
+
         res = {}
         # remove local usage that is removed from wg usage
         for local_wg_pub in local_usage.copy().keys():
             if local_wg_pub not in wg_usage:
                 del local_usage[local_wg_pub]
 
-        
+
         uuid_map = self.__convert_pub_key_to_uuid(wg_usage.keys())
         for wg_pub, wg_usage in wg_usage.items():
             uuid = uuid_map.get(wg_pub)
-            
+
             if not local_usage.get(wg_pub):
                 local_usage[wg_pub] = {"uuid": uuid, "usage": wg_usage}
                 continue

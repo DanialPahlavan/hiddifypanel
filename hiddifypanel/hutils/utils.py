@@ -1,14 +1,14 @@
-from flask_babel import lazy_gettext as _
 from hiddifypanel.hutils import LazyLoader
+
 requests=LazyLoader("requests")
-from packaging.version import Version
 import re
 import sys
 
-from hiddifypanel.models.config import hconfig, ConfigEnum
+from packaging.version import Version
+
 from hiddifypanel import __version__ as current_version
 from hiddifypanel.cache import cache
-
+from hiddifypanel.models.config import ConfigEnum, hconfig
 
 to_gig_d = 1000 * 1000 * 1000
 
@@ -52,7 +52,7 @@ def is_panel_outdated() -> bool:
             if latest_v := get_latest_release_version('hiddifypanel'):
                 if compare_versions(latest_v, current_version) == 1:
                     return True
-    except:
+    except Exception:
         pass
     return False
 

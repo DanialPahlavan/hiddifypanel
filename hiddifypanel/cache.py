@@ -1,8 +1,9 @@
 import os
-from redis_cache import RedisCache, chunks, compact_dump
-import redis
 from pickle import dumps, loads
+
+import redis
 from loguru import logger
+from redis_cache import RedisCache, chunks, compact_dump
 
 redis_client = redis.from_url(os.environ["REDIS_URI_MAIN"])
 # print(os.environ["REDIS_URI_MAIN"])

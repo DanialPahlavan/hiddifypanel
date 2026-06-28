@@ -1,21 +1,19 @@
-from urllib.parse import urlparse
-from flask.views import MethodView
 from apiflask import Schema
-from apiflask.fields import Integer, String, Float, URL, Enum, Boolean
-from flask import g, request
+from apiflask.fields import URL, Boolean, Enum, Float, Integer, String
 from flask import current_app as app
-from hiddifypanel import hutils, auth
-from hiddifypanel.auth import login_required
-
+from flask import g, request
+from flask.views import MethodView
 from flask_babel import gettext as _
+
+from hiddifypanel import auth, hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.database import db
 from hiddifypanel.models import Lang
-from hiddifypanel.models.role import Role
-from hiddifypanel.models.user import User
 from hiddifypanel.models.config import hconfig
 from hiddifypanel.models.config_enum import ConfigEnum
-from hiddifypanel.database import db
+from hiddifypanel.models.role import Role
+from hiddifypanel.models.user import User
 from hiddifypanel.panel.user.user import get_common_data
-from hiddifypanel.panel import hiddify
 
 
 class ProfileSchema(Schema):

@@ -1,11 +1,11 @@
+from datetime import datetime, timedelta
+
 from babel.dates import format_timedelta as babel_format_timedelta
-from datetime import datetime
-from datetime import timedelta
 from flask import g
+from flask_babel import gettext as _
 
 from hiddifypanel.models.config import hconfig
 from hiddifypanel.models.config_enum import ConfigEnum
-from flask_babel import gettext as _
 
 
 def is_int(input: str) -> bool:

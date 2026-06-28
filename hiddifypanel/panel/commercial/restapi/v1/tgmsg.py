@@ -1,13 +1,15 @@
-from typing import List
-from flask import g, request
-from apiflask import abort
-from flask_restful import Resource
 # from flask_simplelogin import login_required
 import datetime
+from typing import List
 
-from hiddifypanel.auth import login_required
+from apiflask import abort
+from flask import g, request
+from flask_restful import Resource
+
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
 from hiddifypanel.models import *
+
 from .tgbot import bot
 
 
@@ -44,7 +46,7 @@ class SendMsgResource(Resource):
         # when we are here we must have g.account but ...
         if not hasattr(g, 'account'):
             return []
-        
+
         query = User.query.filter(User.added_by.in_(g.account.recursive_sub_admins_ids()))
         query = query.filter(User.telegram_id is not None, User.telegram_id != 0)
 

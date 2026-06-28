@@ -1,14 +1,13 @@
 from __future__ import annotations
+
 import uuid
-
-from sqlalchemy import Column, Integer, String, Enum, text
 from enum import auto
-from strenum import StrEnum
+
 from flask import g, has_app_context
+from sqlalchemy import Column, Enum, Integer, String
+from strenum import StrEnum
 
-
-from hiddifypanel.database import db, db_execute
-
+from hiddifypanel.database import db
 
 
 class ChildMode(StrEnum):
@@ -61,7 +60,7 @@ class Child(db.Model):  # type: ignore
 
     @classmethod
     def by_id(cls, id: int) -> 'Child':
-        return db.session.query(Child).filter(Child.id == id).first() 
+        return db.session.query(Child).filter(Child.id == id).first()
 
     @classmethod
     def by_unique_id(cls, unique_id: str) -> 'Child':

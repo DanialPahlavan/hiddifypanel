@@ -7,12 +7,11 @@ bp_uuid = APIBlueprint("api_user_by_uuid", __name__, url_prefix="/<proxy_path>/<
 
 def init_app(app):
     with app.app_context():
-        from .info_api import InfoAPI
         from .apps_api import AppAPI
-        from .mtproxies import MTProxiesAPI
         from .configs_api import AllConfigsAPI
+        from .info_api import InfoAPI
+        from .mtproxies import MTProxiesAPI
         from .short_api import ShortAPI
-        from .apps_api import AppAPI
 
         bp.add_url_rule("/me/", view_func=InfoAPI)
         bp.add_url_rule("/mtproxies/", view_func=MTProxiesAPI)

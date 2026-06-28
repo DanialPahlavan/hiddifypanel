@@ -1,15 +1,15 @@
 
-from flask.views import MethodView
-from flask import current_app as app
-from flask import g
 from apiflask import abort
-
-from hiddifypanel.models.user import User
-from hiddifypanel.database import db
-from hiddifypanel.models.child import Child
+from flask import current_app as app
+from flask.views import MethodView
 from loguru import logger
-from hiddifypanel.models import *
+
 from hiddifypanel.auth import login_required
+from hiddifypanel.database import db
+from hiddifypanel.models import *
+from hiddifypanel.models.child import Child
+from hiddifypanel.models.user import User
+
 from .schema import SyncInputSchema, SyncOutputSchema
 
 
@@ -58,7 +58,7 @@ class SyncApi(MethodView):
             db.session.commit()  # type: ignore
         except Exception as err:
             with logger.contextualize(error=err):
-                logger.error(f"Error while syncing data")
+                logger.error("Error while syncing data")
             abort(400, str(err))
 
         res = SyncOutputSchema()

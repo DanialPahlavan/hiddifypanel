@@ -1,12 +1,15 @@
-from apiflask import Schema, fields, abort
-from flask.views import MethodView
-from hiddifypanel import hutils
-from hiddifypanel.models.role import Role
-from flask import current_app as app, make_response, g, request
 import os
+
 from ansi2html import Ansi2HTMLConverter
+from apiflask import Schema, abort, fields
+from flask import current_app as app
+from flask import g, make_response, request
+from flask.views import MethodView
+
+from hiddifypanel import hutils
 from hiddifypanel.auth import login_required
 from hiddifypanel.models import *
+from hiddifypanel.models.role import Role
 
 
 class AdminInputLogfileSchema(Schema):
@@ -35,8 +38,8 @@ class AdminLogApi(MethodView):
         conv = Ansi2HTMLConverter()
         html_log = f'<div style="background-color:black; color:white;padding:10px">{conv.convert(logs)}</div>'
         resp = make_response(html_log)
-        domain = request.args.get("domain")
-        resp.headers["Access-Control-Allow-Origin"] = f'*'
+        request.args.get("domain")
+        resp.headers["Access-Control-Allow-Origin"] = '*'
         return resp
 
     def options(self):
@@ -46,6 +49,6 @@ class AdminLogApi(MethodView):
             abort(403)
         resp = make_response("")
         resp.headers["Allow"] = "POST"
-        resp.headers["Access-Control-Allow-Origin"] = f'*'
+        resp.headers["Access-Control-Allow-Origin"] = '*'
         resp.headers["Access-Control-Allow-Headers"] = "Hiddify-API-Key"
         return resp

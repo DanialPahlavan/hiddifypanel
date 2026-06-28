@@ -1,16 +1,18 @@
 
-from celery import shared_task
-from sqlalchemy import func
-from typing import Dict
 import datetime
+import json
+from typing import Dict
 
+from celery import shared_task
+from loguru import logger
+from sqlalchemy import func
+
+from hiddifypanel import cache, hutils
+from hiddifypanel.database import db, db_execute
 from hiddifypanel.drivers import user_driver
 from hiddifypanel.models import *
 from hiddifypanel.panel import hiddify
-from hiddifypanel.database import db, db_execute, text
-from hiddifypanel import cache, hutils
-from loguru import logger
-import json
+
 to_gig_d = 1024**3
 
 
@@ -41,7 +43,7 @@ def update_local_usage_not_lock():
         # add_users_usage_uuid({"66ac79b8-8c03-4084-81c7-a2b1b3e9eefe":{"usage":1000000000}},child_id=0)
         # json_data=json.dumps([{ "uuid": uuid, "usage": uinfo["usage"]}for uuid, uinfo in {"66ac79b8-8c03-4084-81c7-a2b1b3e9eefe":{"usage":1000000000}}.items()])
         # db_execute("CALL add_usage_json(:usage_data)", usage_data= json_data, commit=True)
-    except Exception as e:
+    except Exception:
         raise
 
 
@@ -72,7 +74,7 @@ def _reset_priodic_usage() -> bool:
     today = datetime.date.today()
 
     db_change = False
-    for user in db.session.query(User).filter(User.mode != UserMode.no_reset, User.start_date != None, User.start_date+User.package_days >= today).all():
+    for user in db.session.query(User).filter(User.mode != UserMode.no_reset, User.start_date is not None, User.start_date+User.package_days >= today).all():
         if user.user_should_reset():
             logger.info(f"reseting user usage for {user.uuid}")
             old_active = user.is_active
@@ -88,7 +90,7 @@ def _reset_priodic_usage() -> bool:
     if db_change:
         db.session.commit()
 
-    for user in db.session.query(User).filter(User.start_date != None, User.start_date+User.package_days < today).all():
+    for user in db.session.query(User).filter(User.start_date is not None, User.start_date+User.package_days < today).all():
         logger.info(f"Removing enabled client {user.uuid} ")
         if not user.is_active:
             user_driver.remove_client(user)
@@ -119,11 +121,11 @@ def add_users_usage_new(usages: list[dict], child_id, sync=False):
         db.session.commit()
 
     apply_changes = _reset_priodic_usage()
-    
+
     db_execute("CALL add_usage_json(:usage_data,:cur_time)", usage_data=json.dumps(usages),cur_time=cur_time.strftime('%Y-%m-%d %H:%M:%S'), commit=True)
 
     usage_map = {u['uuid']: u for u in usages}
-    
+
     users = db.session.query(User).filter(User.uuid.in_(set(usage_map.keys()))).all()
 
     all_users_uuids = set()
@@ -276,7 +278,8 @@ def send_bot_message(user):
     if not user.telegram_id:
         return
     from flask_babel import lazy_gettext as _
-    from hiddifypanel.panel.commercial.telegrambot import bot, Usage
+
+    from hiddifypanel.panel.commercial.telegrambot import Usage, bot
     try:
         msg = Usage.get_usage_msg(user.uuid)
         msg = _("User activated!") if user.is_active else _("Package ended!") + "\n" + msg

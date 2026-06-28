@@ -1,9 +1,9 @@
-from flask.views import MethodView
 from flask import current_app as app
+from flask.views import MethodView
 from loguru import logger
 
-from hiddifypanel.models import Child, Role
 from hiddifypanel.auth import login_required
+from hiddifypanel.models import Child
 
 from .schema import ChildStatusInputSchema, ChildStatusOutputSchema
 

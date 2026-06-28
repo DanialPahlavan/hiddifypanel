@@ -1,5 +1,7 @@
 import sys
+
 from loguru import logger
+
 
 def logger_dynamic_formatter(record) -> str:
     fmt = '<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>'
@@ -18,14 +20,14 @@ def init_cli(app):
 
 def init_logger(app, cli):
     # configure logger
-    
+
     logger.remove()
     logger.add(sys.stderr if cli else sys.stdout, format=logger_dynamic_formatter, level=app.config['STDOUT_LOG_LEVEL'],
                colorize=True, catch=True, enqueue=True, diagnose=True, backtrace=True)
     logger.trace('Logger initiated :)')
 
     with app.app_context():
-        from hiddifypanel.models.config import hconfig,ConfigEnum
+        from hiddifypanel.models.config import ConfigEnum, hconfig
         set_level(app,hconfig(ConfigEnum.log_level))
 
 

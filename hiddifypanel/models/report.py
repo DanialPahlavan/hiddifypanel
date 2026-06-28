@@ -1,8 +1,6 @@
 import datetime
 
-
 from hiddifypanel.database import db
-
 
 
 class Report(db.Model):

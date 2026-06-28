@@ -1,18 +1,18 @@
-from enum import auto
 import ipaddress
 import json
 import re
+from enum import auto
 from typing import Dict, List
-from flask import request
 
+from flask import request
 from sqlalchemy.orm import backref
 from strenum import StrEnum
 
-
 from hiddifypanel.database import db
 from hiddifypanel.models.config import hconfig
-from .child import Child
 from hiddifypanel.models.config_enum import ConfigEnum
+
+from .child import Child
 
 
 class DomainType(StrEnum):
@@ -70,7 +70,7 @@ class Domain(db.Model):
         import json
         try:
             return json.loads(self.extra_params)
-        except:
+        except Exception:
             return {}
     def __repr__(self):
         return f'{self.domain}'
@@ -81,14 +81,14 @@ class Domain(db.Model):
         for ip in ips:
             try:
                 res.add(ipaddress.ip_address(ip))
-            except:
+            except Exception:
                 pass
         return res
 
     def to_dict(self, dump_ports=False, dump_child_id=False):
         try:
             extra=json.loads(self.extra_params or "{}")
-        except:
+        except Exception:
             extra={}
         data = {
             'domain': self.domain.lower(),

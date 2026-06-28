@@ -1,18 +1,14 @@
 import datetime
 
+import json5
 from flask_admin.contrib.sqla import ModelView
 from flask_babel import lazy_gettext as _
-from wtforms import TextAreaField
-from wtforms.fields import IntegerField, SelectField, DecimalField
-from wtforms.widgets import TextArea
-
-from wtforms import Field
+from wtforms import Field, TextAreaField
+from wtforms.fields import DecimalField, IntegerField, SelectField
 from wtforms.validators import ValidationError
 from wtforms.widgets import TextArea
-import json5
 
 from hiddifypanel.models import *
-
 
 # from gettext import gettext as _
 
@@ -107,9 +103,9 @@ class JSONWidget(TextArea):
             kwargs['class'] += ' ltr json-editor'
         else:
             kwargs.setdefault('class', 'ltr json-editor')
-        
+
         kwargs.setdefault("rows",10)
-        
+
         return super().__call__(field, **kwargs)
 
 class JSONField(Field):
@@ -127,15 +123,17 @@ class JSONField(Field):
 
     def process_formdata(self, valuelist):
         if valuelist:
-            try:    
+            try:
                 self.data = json5.loads(valuelist[0]) if valuelist[0] else ""
             except Exception as e:
                 raise ValidationError(f'Invalid JSON: {e}')
-            
 
 
-from typing import Type, TypeVar,Generic
+
+from typing import Generic, Type, TypeVar
+
 from pydantic import BaseModel
+
 T=TypeVar("T",bound=BaseModel)
 class CustomJSONField(Field, Generic[T]):
     widget = JSONWidget()

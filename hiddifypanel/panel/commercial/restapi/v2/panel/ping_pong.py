@@ -1,9 +1,10 @@
+from flask import current_app as app
 from flask.views import MethodView
 
 from hiddifypanel.auth import login_required
 from hiddifypanel.models import Role
+
 from .schema import PongOutputSchema
-from flask import current_app as app
 
 
 class PingPongApi(MethodView):

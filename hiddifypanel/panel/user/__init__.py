@@ -1,11 +1,12 @@
-from .user import UserView
-from flask import send_from_directory
-from flask import Blueprint
+from apiflask import APIBlueprint
+from flask import Blueprint, send_from_directory
+
 from hiddifypanel.database import db
 
 # from .resources import ProductItemResource, ProductResource
 from .user import *
-from apiflask import APIBlueprint
+from .user import UserView
+
 bp = APIBlueprint("client", __name__, url_prefix="/<proxy_path>/client/", template_folder="templates", enable_openapi=False)
 
 

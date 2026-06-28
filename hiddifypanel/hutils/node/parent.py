@@ -1,14 +1,15 @@
+from typing import List
+
 from flask import g
 from flask_babel import lazy_gettext as _
-from typing import List
 from loguru import logger
 
-from hiddifypanel.models import Child, AdminUser, ConfigEnum, Domain, hconfig, Domain
 from hiddifypanel import hutils
-from hiddifypanel.panel.commercial.restapi.v2.child.schema import RegisterWithParentInputSchema
-from .api_client import NodeApiClient, NodeApiErrorSchema
-
 from hiddifypanel.cache import cache
+from hiddifypanel.models import AdminUser, Child, ConfigEnum, Domain, hconfig
+from hiddifypanel.panel.commercial.restapi.v2.child.schema import RegisterWithParentInputSchema
+
+from .api_client import NodeApiClient, NodeApiErrorSchema
 
 
 def request_childs_to_sync():

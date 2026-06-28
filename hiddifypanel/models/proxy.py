@@ -1,11 +1,11 @@
 
-from strenum import StrEnum
 from enum import auto
-from sqlalchemy import Column, String, Integer, Boolean, Enum, ForeignKey
+
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+from sqlalchemy.types import JSON
+from strenum import StrEnum
 
 from hiddifypanel.database import db
-
-from sqlalchemy.types import JSON
 
 
 class ProxyTransport(StrEnum):

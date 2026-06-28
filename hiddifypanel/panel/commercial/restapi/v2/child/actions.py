@@ -1,12 +1,11 @@
-from apiflask import fields, Schema
+from apiflask import Schema, fields
 from flask import current_app as app
-from flask import g
 from flask.views import MethodView
 from loguru import logger
 
-from hiddifypanel.models.child import Child
-from hiddifypanel.panel.run_commander import commander, Command
 from hiddifypanel.auth import login_required
+from hiddifypanel.models.child import Child
+from hiddifypanel.panel.run_commander import Command, commander
 
 
 class Status(MethodView):

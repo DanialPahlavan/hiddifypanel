@@ -1,27 +1,25 @@
-import re
-from flask_admin.actions import action
 import datetime
+import re
 import uuid
-from apiflask import abort
-from flask_bootstrap import SwitchField, BooleanField
-from flask_babel import gettext as __
-from .adminlte import AdminLTEModelView
-from wtforms.validators import NumberRange
-from flask_babel import lazy_gettext as _
-from flask import g, request  # type: ignore
-from markupsafe import Markup
-from sqlalchemy import desc, func
-from flask_admin.contrib.sqla import form, filters as sqla_filters, tools
-from hiddifypanel.hutils.flask import hurl_for
-from wtforms.validators import Regexp, ValidationError
-from flask import current_app
 
-import hiddifypanel
-from hiddifypanel.models import *
-from hiddifypanel.drivers import user_driver
-from hiddifypanel.panel import hiddify, custom_widgets
-from hiddifypanel.auth import login_required
+from apiflask import abort
+from flask import g, request  # type: ignore
+from flask_admin.actions import action
+from flask_admin.contrib.sqla import tools
+from flask_babel import gettext as __
+from flask_babel import lazy_gettext as _
+from flask_bootstrap import SwitchField
+from markupsafe import Markup
+from wtforms.validators import NumberRange, Regexp, ValidationError
+
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.drivers import user_driver
+from hiddifypanel.hutils.flask import hurl_for
+from hiddifypanel.models import *
+from hiddifypanel.panel import custom_widgets, hiddify
+
+from .adminlte import AdminLTEModelView
 
 
 class UserAdmin(AdminLTEModelView):
@@ -71,7 +69,7 @@ class UserAdmin(AdminLTEModelView):
             #     'label': 'First Name',
             #     'validators': [required()]
         },
-        
+
         # ,
         # 'expiry_time':{
         # "":'%Y-%m-%d'
@@ -139,7 +137,7 @@ class UserAdmin(AdminLTEModelView):
             if model.telegram_id:
                 link += f'<button class="btn hbtn bg-h-blue btn-xs " onclick="show_send_message({model.id})" ><i class="fa-solid fa-paper-plane"></i></button> '
             else:
-                link += f'<button class="btn hbtn bg-h-grey btn-xs disabled"><i class="fa-solid fa-paper-plane"></i></button> '
+                link += '<button class="btn hbtn bg-h-grey btn-xs disabled"><i class="fa-solid fa-paper-plane"></i></button> '
 
         return Markup(link)
 
@@ -163,7 +161,6 @@ class UserAdmin(AdminLTEModelView):
         u = round(model.current_usage_GB, 3)
         t = max(round(model.usage_limit_GB, 3), 0.001)  # Prevent division by zero
         rate = min(round(u * 100 / t), 100)  # Cap at 100%
-        state = "danger" if u >= t else ('warning' if rate > 80 else 'success')
         color = "#ff7e7e" if u >= t else ('#ffc107' if rate > 80 else '#9ee150')
         return Markup(f"""
         <div class="progress progress-lg position-relative" style="min-width: 100px;">
@@ -214,12 +211,12 @@ class UserAdmin(AdminLTEModelView):
 
     def on_model_delete(self, model):
         if len(User.query.all()) <= 1:
-            raise ValidationError(f"at least one user should exist")
+            raise ValidationError("at least one user should exist")
         user_driver.remove_client(model)
         # hutils.flask.flash_config_success()
 
     def is_accessible(self):
-        if login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)() != True:
+        if not login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)():
             return False
         return True
 
@@ -250,7 +247,7 @@ class UserAdmin(AdminLTEModelView):
             if hasattr(form, 'reset_usage'):
                 form.reset_usage.label.text += usr_usage
                 form.reset_usage.data = False
-            
+
             if hasattr(form, 'usage_limit'):
                 form.usage_limit.label.text += usr_usage
 
@@ -279,38 +276,38 @@ class UserAdmin(AdminLTEModelView):
             model.max_ips = max(3, min(int(model.max_ips or 10000), 10000))
         except (ValueError, TypeError):
             model.max_ips = 1000
-            
+
         # Show donation message
         if len(User.query.all()) % 4 == 0:
             hutils.flask.flash(('<div id="show-modal-donation"></div>'), ' d-none')
-            
+
         # Validate UUID
         if not re.match("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", model.uuid):
             raise ValidationError('Invalid UUID e.g.,' + str(uuid.uuid4()))
-            
+
         # Handle reset flags
         if hasattr(form, 'reset_usage') and form.reset_usage.data:
             model.current_usage_GB = 0
-            
+
         if hasattr(form, 'reset_days') and form.reset_days.data:
             model.start_date = None
-            
+
         # Validate package days
         try:
             model.package_days = min(int(model.package_days), 10000)
         except (ValueError, TypeError):
             model.package_days = 10000
-            
+
         # Handle user ownership
         old_user = User.by_id(model.id)
         if not model.added_by or model.added_by == 1:
             model.added_by = g.account.id
-            
+
         # Validate user limits
         if not g.account.can_have_more_users():
             raise ValidationError(_('You have too much users! You can have only %(active)s active users and %(total)s users',
                                   active=g.account.max_active_users, total=g.account.max_users))
-                                  
+
         # Handle UUID changes
         if old_user and old_user.uuid != model.uuid:
             user_driver.remove_client(old_user)
@@ -451,7 +448,7 @@ class UserAdmin(AdminLTEModelView):
         self.session.commit()
         hutils.flask.flash(_('%(count)s records were successfully enabled.', count=count), 'success')
         self.apply(query.all())
-    
+
     @action('delete', 'Delete', 'Are you sure you want to delete selected users?')
     def action_delete(self, ids):
         query = tools.get_query_for_ids(self.get_query(), self.model, ids)
@@ -461,7 +458,7 @@ class UserAdmin(AdminLTEModelView):
         count =query.delete()
         self.session.commit()
         hutils.flask.flash(_('%(count)s records were successfully deleted.', count=count), 'success')
-    
+
     @action('reset usage', 'Reset Usage', 'Are you sure you want to reset usage of selected users?')
     def action_reset_usage(self, ids):
         query = tools.get_query_for_ids(self.get_query(), self.model, ids)
@@ -469,7 +466,7 @@ class UserAdmin(AdminLTEModelView):
         self.session.commit()
         hutils.flask.flash(_('%(count)s records were successfully reset usage.', count=count), 'success')
         self.apply(query.all())
-    
+
     @action('add_days_7', 'Add 7 Days', 'Are you sure you want to add days to selected users?')
     def action_add_days(self, ids, days=7):
         query = tools.get_query_for_ids(self.get_query(), self.model, ids)
@@ -499,9 +496,9 @@ class UserAdmin(AdminLTEModelView):
 
     def apply(self,users):
         for user in users:
-        
+
             if user.is_active:
                 user_driver.add_client(user)
             else:
-                user_driver.remove_client(user) 
+                user_driver.remove_client(user)
         hiddify.quick_apply_users()

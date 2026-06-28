@@ -1,19 +1,18 @@
+import os
 import re
 import subprocess
-
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple
-from flask import current_app, g
-from flask_babel import lazy_gettext as _
-from datetime import timedelta
-import os
+
+from flask import g
+
+from hiddifypanel import hutils
 from hiddifypanel.cache import cache
-from hiddifypanel.models import *
 from hiddifypanel.database import db
 from hiddifypanel.hutils.utils import *
-from hiddifypanel import hutils
-from hiddifypanel.panel.run_commander import commander, Command
-import subprocess
+from hiddifypanel.models import *
+from hiddifypanel.panel.run_commander import Command, commander
+
 to_gig_d = 1000 * 1000 * 1000
 
 
@@ -76,7 +75,7 @@ def quick_apply_users():
 
 
 def get_html_user_link(model: BaseAccount, domain: Domain):
-    is_cdn = domain.mode == DomainType.cdn if isinstance(domain, Domain) else False
+    domain.mode == DomainType.cdn if isinstance(domain, Domain) else False
     res = ""
     d = domain.domain
     if "*" in d:
@@ -158,25 +157,23 @@ def dump_db_to_dict():
 
 
 def get_ids_without_parent(input_dict):
-    selector = "uuid"
     # Get all parent_uuids in a set for faster lookup
-    parent_uuids = {item.get(f'parent_admin_uuid') for item in input_dict.values()
-                    if item.get(f'parent_admin_uuid') is not None
-                    and item.get(f'parent_admin_uuid') != item.get('uuid')}
+    parent_uuids = {item.get('parent_admin_uuid') for item in input_dict.values()
+                    if item.get('parent_admin_uuid') is not None
+                    and item.get('parent_admin_uuid') != item.get('uuid')}
     print("PARENTS", parent_uuids)
     uuids = {v['uuid']: v for v in input_dict.values()}
     # Find all uuids that do not have a parent_uuid in the dict
     uuids_without_parent = [key for key, item in input_dict.items()
-                            if item.get(f'parent_admin_uuid') is None
-                            or item.get(f'parent_admin_uuid') == item.get('uuid')
-                            or item[f'parent_admin_uuid'] not in uuids]
+                            if item.get('parent_admin_uuid') is None
+                            or item.get('parent_admin_uuid') == item.get('uuid')
+                            or item['parent_admin_uuid'] not in uuids]
     print("abondon uuids", uuids_without_parent)
     return uuids_without_parent
 
 
 def set_db_from_json(json_data, override_child_unique_id=True, set_users=True, set_domains=True, set_proxies=True, set_settings=True, remove_domains=False, remove_users=False,
                      override_unique_id=True, set_admins=True, override_root_admin=False, replace_owner_admin=False, fix_admin_hierarchy=True, set_child=True):
-    new_rows = []
 
     # override root child unique id
     if override_child_unique_id:
@@ -355,7 +352,7 @@ def all_configs_for_cli():
     }
 
     def_user = User.query.filter(User.name == 'default').first() if User.query.count() == 1 else None
-    
+
 
     configs['chconfigs'][0]['first_setup'] = def_user is not None and Domain.query.filter(Domain.domain.contains("sslip.io")).limit(1).count() > 0
     server_ip = hutils.network.get_ip_str(4)
@@ -366,10 +363,10 @@ def all_configs_for_cli():
     configs['panel_links'] = []
     configs['panel_links'].append(get_account_panel_link(owner, server_ip, is_https=False))
     configs['panel_links'].append(get_account_panel_link(owner, server_ip))
-    
+
     domains = Domain.get_domains()
     for d in domains:
         configs['panel_links'].append(get_account_panel_link(owner, d.domain))
-    
+
 
     return configs

@@ -1,13 +1,11 @@
 
-from urllib.parse import (
-    urlencode, unquote, urlparse, parse_qsl, ParseResult
-)
 import webbrowser
-from flask import g, request, render_template
-from sys import version as python_version
-from platform import platform
 from json import dumps
-from flask import g, request, render_template
+from platform import platform
+from sys import version as python_version
+from urllib.parse import ParseResult, parse_qsl, unquote, urlencode, urlparse
+
+from flask import render_template, request
 
 import hiddifypanel
 from hiddifypanel.models.config import hconfig
@@ -183,7 +181,7 @@ def generate_github_issue_link_for_500_error(error, traceback: str, remove_sense
 
     # Create github issue link
     issue_link = __generate_github_issue_link(
-        f"Internal server error: {error.name if hasattr(error,'name') and error.name != None and error.name else 'Unknown'}", issue_body)
+        f"Internal server error: {error.name if hasattr(error,'name') and error.name is not None and error.name else 'Unknown'}", issue_body)
 
     if remove_sensetive_data:
         issue_link = __remove_sensetive_data_from_github_issue_link(issue_link)

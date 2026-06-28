@@ -1,12 +1,12 @@
 import uuid
-from apiflask.fields import String, Float, Enum, Date, Integer, Boolean, DateTime
-from apiflask import Schema, fields
 from typing import Any, Mapping
 
+from apiflask import Schema, fields
+from apiflask.fields import Boolean, Date, Enum, Float, Integer, String
 from marshmallow import ValidationError
 
-from hiddifypanel.models import UserMode, Lang, AdminMode
 from hiddifypanel import hutils
+from hiddifypanel.models import AdminMode, Lang, UserMode
 
 # region user api
 

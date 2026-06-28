@@ -1,14 +1,16 @@
 from urllib.parse import urlparse
-from flask import g, request
-from flask import current_app as app
-from flask.views import MethodView
-from hiddifypanel.auth import login_required
-from hiddifypanel.models import Proxy, Role, ConfigEnum, hconfig
+
 from apiflask import Schema
 from apiflask.fields import String
-from hiddifypanel.panel.user.user import get_common_data
+from flask import current_app as app
+from flask import g, request
+from flask.views import MethodView
+
 from hiddifypanel import hutils
-from apiflask import fields
+from hiddifypanel.auth import login_required
+from hiddifypanel.models import ConfigEnum, Role, hconfig
+from hiddifypanel.panel.user.user import get_common_data
+
 
 class ConfigSchema(Schema):
     name = String(required=True)

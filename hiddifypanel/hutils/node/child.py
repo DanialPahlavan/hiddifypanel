@@ -1,20 +1,31 @@
-from loguru import logger
 import socket
-from flask_babel import gettext as _
+
+from loguru import logger
 from strenum import StrEnum
 
-from hiddifypanel.models import AdminUser, User, hconfig, ConfigEnum, ChildMode, Domain, Proxy, StrConfig, BoolConfig, Child, ChildMode
 from hiddifypanel import hutils
-from hiddifypanel.panel import hiddify
-from hiddifypanel.panel import usage
-from hiddifypanel.database import db
 from hiddifypanel.cache import cache
+from hiddifypanel.database import db
+from hiddifypanel.models import (
+    AdminUser,
+    BoolConfig,
+    Child,
+    ChildMode,
+    ConfigEnum,
+    Domain,
+    Proxy,
+    StrConfig,
+    User,
+    hconfig,
+)
+from hiddifypanel.panel import hiddify, usage
+from hiddifypanel.panel.commercial.restapi.v2.child.schema import *
 
 # import schmeas
 from hiddifypanel.panel.commercial.restapi.v2.parent.schema import *
-from hiddifypanel.panel.commercial.restapi.v2.child.schema import *
 
 from .api_client import NodeApiClient, NodeApiErrorSchema
+
 # region private
 
 
@@ -87,7 +98,7 @@ def is_registered() -> bool:
             return True
         return False
     except Exception as e:
-        logger.error(f"Error while checking if current panel is registered with parent")
+        logger.error("Error while checking if current panel is registered with parent")
         logger.exception(e)
         return False
 

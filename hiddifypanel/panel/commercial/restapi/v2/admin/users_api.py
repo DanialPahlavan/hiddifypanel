@@ -1,14 +1,16 @@
-from flask.views import MethodView
-from flask import current_app as app, g
 from apiflask import abort
+from flask import current_app as app
+from flask import g
+from flask.views import MethodView
+
 from hiddifypanel.auth import login_required
-from hiddifypanel.models.role import Role
-from hiddifypanel.panel import hiddify
 from hiddifypanel.drivers import user_driver
 from hiddifypanel.models import User
-from .user_api import UserSchema, PostUserSchema
-from . import has_permission
-from apiflask import fields
+from hiddifypanel.models.role import Role
+from hiddifypanel.panel import hiddify
+
+from .user_api import PostUserSchema, UserSchema
+
 
 class UsersApi(MethodView):
     decorators = [login_required({Role.super_admin, Role.admin, Role.agent})]

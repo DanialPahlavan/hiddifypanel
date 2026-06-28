@@ -1,6 +1,7 @@
-import urllib.parse
 import base64
+import urllib.parse
 import uuid
+
 
 def unicode_slug(instr: str) -> str:
     from slugify import slugify

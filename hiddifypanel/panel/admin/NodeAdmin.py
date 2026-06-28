@@ -1,19 +1,16 @@
-from hiddifypanel.database import db
-import copy
-from wtforms.validators import Regexp, ValidationError
-from flask_babel import lazy_gettext as _
-from .adminlte import AdminLTEModelView
-from flask_babel import gettext as __
+
 from flask import g, request
+from flask_babel import lazy_gettext as _
 from markupsafe import Markup
+from wtforms.validators import ValidationError
 
-
+from hiddifypanel import hutils
 from hiddifypanel.auth import login_required
+from hiddifypanel.database import db
+from hiddifypanel.models import *
 from hiddifypanel.panel import hiddify
 
-from hiddifypanel.models import *
-from hiddifypanel import hutils
-from sqlalchemy.orm.session import make_transient
+from .adminlte import AdminLTEModelView
 
 
 class NodeAdmin(AdminLTEModelView):
@@ -40,7 +37,7 @@ class NodeAdmin(AdminLTEModelView):
     can_export = False
 
     def is_accessible(self):
-        if login_required(roles={Role.super_admin})(lambda: True)() != True:
+        if not login_required(roles={Role.super_admin})(lambda: True)():
             return False
         if Child.current().id != 0:
             return False

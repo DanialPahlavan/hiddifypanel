@@ -1,25 +1,21 @@
-import json
-
-import user_agents
 import datetime
+import json
 import random
 import re
-
-from flask import render_template, request, Response, g
-from apiflask import abort
-from flask_classful import FlaskView, route
-from flask_babel import gettext as _
-
-
-import requests
 from concurrent.futures import ThreadPoolExecutor
 
+import requests
+import user_agents
+from apiflask import abort
+from flask import Response, g, render_template, request
+from flask_babel import gettext as _
+from flask_classful import FlaskView, route
+
+from hiddifypanel import hutils
 from hiddifypanel.auth import login_required
-from hiddifypanel.database import db
-from hiddifypanel.panel import hiddify
-from hiddifypanel.models import *
-from hiddifypanel import  hutils
 from hiddifypanel.cache import cache
+from hiddifypanel.models import ConfigEnum, Domain, DomainType, ProxyProto, Role, User, get_hconfigs, hconfig
+from hiddifypanel.panel import hiddify
 
 
 class UserView(FlaskView):
@@ -70,17 +66,17 @@ class UserView(FlaskView):
         c = get_common_data(g.account.uuid, mode="new")
         all_configs = hutils.proxy.xrayjson.configs_as_json(c['domains'], c['user'], c['expire_days'], c['profile_title'])
 
-        
+
         link_res=get_and_merge_urls(hconfig(ConfigEnum.additional_configs_urls).split("\n"))
         for item in [hconfig(ConfigEnum.additional_configs_xrayjson),*link_res]:
                 if jsitem:=parse_json(item):
                     if isinstance(jsitem,list):
                         all_configs.extends(jsitem)
-                    else:    
+                    else:
                         all_configs.append(jsitem)
         if len(all_configs)==1:
             all_configs=all_configs[0]
-        json_configs = json.dumps(all_configs, indent=2, cls=hutils.proxy.ProxyJsonEncoder)        
+        json_configs = json.dumps(all_configs, indent=2, cls=hutils.proxy.ProxyJsonEncoder)
         return add_headers(json_configs, c, 'application/json')
 
     @route("/singbox/")
@@ -104,13 +100,12 @@ class UserView(FlaskView):
         '''Returns wireguard client config'''
         c = get_common_data(g.account.uuid, 'new')
         wireguards = []
-        servers = set()
         for pinfo in hutils.proxy.get_valid_proxies(c['domains']):
             if pinfo['proto'] != ProxyProto.wireguard:
                 continue
             wireguards.append(pinfo)
 
-            
+
 
         if not len(wireguards):
             abort(404)
@@ -268,7 +263,7 @@ class UserView(FlaskView):
                         base_config.setdefault("outbounds",[]).extend(outbounds)
                     if endpoints:=jsitem.get("endpoints"):
                         base_config.setdefault("endpoints",[]).extend(endpoints)
-                
+
 
             resp = json.dumps(base_config, indent=4, cls=hutils.proxy.ProxyJsonEncoder)
 
@@ -289,7 +284,7 @@ class UserView(FlaskView):
             resp = ""
         else:
             resp = render_template('singbox_config.json', **c, host_keys=hutils.proxy.get_ssh_hostkeys(get_hconfigs(),True),
-                                   ssh_client_version=hiddify.get_ssh_client_version(user), ssh_ip=hutils.network.get_direct_host_or_ip(4), base64=False)
+                                   ssh_client_version=hiddify.get_ssh_client_version(g.account), ssh_ip=hutils.network.get_direct_host_or_ip(4), base64=False)
 
         return add_headers(resp, c)
 
@@ -313,7 +308,7 @@ class UserView(FlaskView):
             resp = hutils.proxy.xray.make_v2ray_configs(c['domains'], c['user'], c['expire_days'], c['ip_debug'])
             link_res=get_and_merge_urls(hconfig(ConfigEnum.additional_configs_urls).split("\n"))
             resp+="\n"+"\n\n".join(link_res)
-        
+
         if base64:
             resp = hutils.encode.do_base_64(resp)
         return add_headers(resp, c)
@@ -339,7 +334,7 @@ class UserView(FlaskView):
 # @cache.cache(ttl=300)
 def get_domain_information(no_domain=False, filter_domain=None, alternative=None):
     domains = []
-    default_asn = request.args.get("asn", '')
+    request.args.get("asn", '')
     if filter_domain:
         domain = filter_domain
         db_domain = Domain.query.filter(Domain.domain == domain).first() or Domain(
@@ -359,7 +354,7 @@ def get_domain_information(no_domain=False, filter_domain=None, alternative=None
             db_domain = Domain(domain=domain, show_domains=[])
             hutils.flask.flash(_("This domain does not exist in the panel!" + domain))
 
-        domains = db_domain.show_domains or Domain.query.filter(Domain.sub_link_only != True).all()
+        domains = db_domain.show_domains or Domain.query.filter(not Domain.sub_link_only).all()
 
     has_auto_cdn = False
     # for d in domains:
@@ -392,12 +387,6 @@ def get_common_data(user_uuid, mode, no_domain=False, filter_domain=None):
     if user is None:
         abort(401, "Invalid User")
 
-    package_mode_dic = {
-        UserMode.daily: 1,
-        UserMode.weekly: 7,
-        UserMode.monthly: 30
-
-    }
 
     expire_days = user.remaining_days
     reset_days = user.days_to_reset()
@@ -420,7 +409,7 @@ def get_common_data(user_uuid, mode, no_domain=False, filter_domain=None):
         'user_activate': user.is_active,
         'domain': domain,
         'mode': mode,
-        'fake_ip_for_sub_link': datetime.datetime.now().strftime(f"%H.%M--%Y.%m.%d.time:%H%M"),
+        'fake_ip_for_sub_link': datetime.datetime.now().strftime("%H.%M--%Y.%m.%d.time:%H%M"),
         'usage_limit_b': int(user.usage_limit_GB * 1024 * 1024 * 1024),
         'usage_current_b': int(user.current_usage_GB * 1024 * 1024 * 1024),
         'expire_s': expire_s,
@@ -468,7 +457,7 @@ def add_headers(res, c, mimetype="text/plain"):
 
 
 
- 
+
 
 
 @cache.cache(ttl=300)
@@ -481,14 +470,14 @@ def fetch_url(url:str):
         })
         resp.raise_for_status()
         content = resp.text
- 
-    
+
+
         return content
- 
+
     except Exception:
-    
+
         return ""
- 
+
 def get_and_merge_urls(urls:list[str], max_workers=8):
     if len(urls)==0 or len(urls)==1 and urls[0]=="":
         return []
@@ -500,14 +489,14 @@ def get_and_merge_urls(urls:list[str], max_workers=8):
                 urls
             )
         )
- 
+
     return contents
- 
+
 
 
 def parse_json(s:str):
     try:
         return json.loads(s)
-    except:
+    except Exception:
         pass
     return {}

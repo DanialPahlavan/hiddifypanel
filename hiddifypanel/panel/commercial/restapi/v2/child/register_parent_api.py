@@ -1,12 +1,12 @@
-from apiflask import abort, fields, Schema
+from apiflask import abort
+from flask import current_app as app
 from flask.views import MethodView
-from flask import current_app as app, g
 from flask_babel import lazy_gettext as _
 from loguru import logger
 
-from hiddifypanel.auth import login_required
-from hiddifypanel.models import set_hconfig, ConfigEnum, PanelMode, Role
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.models import ConfigEnum, PanelMode, Role, set_hconfig
 
 from .schema import RegisterWithParentInputSchema
 

@@ -1,19 +1,18 @@
+import wtforms as wtf
+from flask import render_template
+from flask_babel import gettext as _
+from flask_bootstrap import SwitchField
+from flask_classful import FlaskView
+from flask_wtf import FlaskForm
+from wtforms.fields import *
+
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.database import db
+from hiddifypanel.models import BoolConfig, Child, ConfigEnum, Proxy, get_hconfigs, set_hconfig
 from hiddifypanel.models.config_enum import ApplyMode
 from hiddifypanel.models.role import Role
-import wtforms as wtf
-from flask_wtf import FlaskForm
-from flask_bootstrap import SwitchField
-from flask_babel import gettext as _
-from flask import render_template
-
-
-from hiddifypanel.models import ConfigEnum, Child, get_hconfigs, BoolConfig, ConfigEnum, hconfig, Proxy, set_hconfig
-from hiddifypanel.database import db
-from wtforms.fields import *
 from hiddifypanel.panel import hiddify
-from flask_classful import FlaskView
-from hiddifypanel.auth import login_required
 
 
 class ProxyAdmin(FlaskView):
@@ -79,7 +78,7 @@ def get_global_config_form(empty=False):
             continue
         if not cf.key.endswith("_enable") or cf.key in [ConfigEnum.mux_brutal_enable, ConfigEnum.mux_padding_enable, ConfigEnum.hysteria_obfs_enable]:
             continue
-        
+
         field = SwitchField(_(f'config.{cf.key}.label'), default=cf.value, description=_(f'config.{cf.key}.description'))
         setattr(DynamicForm, f'{cf.key}', field)
     setattr(DynamicForm, "submit_global", wtf.fields.SubmitField(_('Submit')))
@@ -107,7 +106,7 @@ def get_all_proxy_form(empty=False):
             'ssh': 'other',
             'hysteria2': 'other',
             "mieru":"other"
-            
+
         }
         protos = sorted([c for c in {pgroup.get(c.proto, c.proto): 1 for c in cdn_proxies}])
         for proto in protos:

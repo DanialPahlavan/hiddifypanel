@@ -1,8 +1,9 @@
 import os
 import subprocess
 import sys
+
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import x25519, ed25519
+from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
 
 
 def get_ed25519_private_public_pair():
@@ -65,7 +66,7 @@ def generate_ssh_host_keys():
         subprocess.run([
             "ssh-keygen", "-t", key_type,
             "-f", key_file,
-            "-N", "" 
+            "-N", ""
         ], check=True,stdout=sys.stderr)
 
         keys_dict[key_type]={}

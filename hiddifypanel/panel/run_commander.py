@@ -1,8 +1,9 @@
+import os
+import subprocess
 import threading
 from typing import List
+
 from strenum import StrEnum
-import subprocess
-import os
 
 
 class Command(StrEnum):

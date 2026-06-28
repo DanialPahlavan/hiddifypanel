@@ -1,21 +1,16 @@
-from flask import request, g
-import redis
-# from hiddifypanel.cache import cache
-from hiddifypanel.models import *
+import datetime
+import os
 
 import flask_bootstrap
+import redis
+from flask import g, request
 from flask_babel import Babel
 from flask_session import Session
-
-import datetime
-
-from dotenv import dotenv_values
-import os
-import sys
-from werkzeug.middleware.proxy_fix import ProxyFix
-from loguru import logger
 from sonora.wsgi import grpcWSGI
+from werkzeug.middleware.proxy_fix import ProxyFix
 
+# from hiddifypanel.cache import cache
+from hiddifypanel.models import *
 
 
 def init_app(app):
@@ -24,7 +19,7 @@ def init_app(app):
         app.wsgi_app = ProxyFix(
             app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1,
         )
-        
+
 
         app.secret_key="asdsad"
         app.servers = {
@@ -47,7 +42,7 @@ def init_app(app):
         # setup flask server-side session
         # app.config['APPLICATION_ROOT'] = './'
         # app.config['SESSION_COOKIE_DOMAIN'] = '/'
-        
+
 
         app.jinja_env.line_statement_prefix = '%'
         from hiddifypanel import hutils
@@ -64,10 +59,10 @@ def init_app(app):
                 g.locale = auth.current_account.lang or hconfig(ConfigEnum.lang) or 'en'
             return g.locale
         app.jinja_env.globals['get_locale'] = get_locale
-        babel = Babel(app, locale_selector=get_locale)
-        
+        Babel(app, locale_selector=get_locale)
+
         app.config['SESSION_TYPE'] = 'redis'
-        
+
         app.config['SESSION_REDIS'] = redis.from_url(os.environ['REDIS_URI_MAIN'])
         app.config['SESSION_PERMANENT'] = True
         app.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(days=10)

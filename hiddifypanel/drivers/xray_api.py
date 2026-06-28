@@ -1,9 +1,10 @@
+from collections import defaultdict
+
 import xtlsapi
 from hiddifypanel.models import *
-from .abstract_driver import DriverABS
-from collections import defaultdict
-from hiddifypanel.cache import cache
 from loguru import logger
+
+from .abstract_driver import DriverABS
 
 
 class XrayApi(DriverABS):
@@ -111,7 +112,7 @@ class XrayApi(DriverABS):
 
     def add_client(self, user):
         uuid = user.uuid
-        xray_client = self.get_xray_client()
+        self.get_xray_client()
         tags = self.get_inbound_tags()
 
         for t in tags:
@@ -121,7 +122,7 @@ class XrayApi(DriverABS):
             except ValueError:
                 # tag invalid
                 pass
-            except Exception as e:
+            except Exception:
                 # print(f"error in add  {uuid} {t} {e}")
                 pass
 
@@ -177,8 +178,8 @@ class XrayApi(DriverABS):
 
 
     def get_enabled_users_terminal(self):
-        import subprocess
         import json
+        import subprocess
         tags=self.get_inbound_tags()
         for t in tags:
         # Command to execute

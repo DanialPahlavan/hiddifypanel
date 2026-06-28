@@ -1,11 +1,10 @@
-from typing import Set
 from apiflask import HTTPBasicAuth, HTTPTokenAuth
-from flask_httpauth import MultiAuth
-
-from hiddifypanel.models.user import User
-from hiddifypanel.models.admin import AdminUser
 from flask import session
+from flask_httpauth import MultiAuth
 from strenum import StrEnum
+
+from hiddifypanel.models.admin import AdminUser
+from hiddifypanel.models.user import User
 
 basic_auth = HTTPBasicAuth()
 api_auth = HTTPTokenAuth("ApiKey")

@@ -1,6 +1,8 @@
 import yaml
-from hiddifypanel.models import ProxyCDN, ProxyL3, ProxyProto, ProxyTransport, Domain
+
 from hiddifypanel import hutils
+from hiddifypanel.models import Domain, ProxyCDN, ProxyL3, ProxyProto, ProxyTransport
+
 # https://wiki.metacubex.one/en/
 
 

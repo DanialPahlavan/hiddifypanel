@@ -1,11 +1,13 @@
-import json
 import copy
-from flask import render_template, g
-from hiddifypanel import hutils
-from hiddifypanel.models import ProxyTransport, ProxyL3, ProxyProto, Domain, User
+import json
+
+from flask import g, render_template
 from flask_babel import gettext as _
-from hiddifypanel.models import hconfig, ConfigEnum
-from .xray import is_muxable_agent, OUTBOUND_LEVEL
+
+from hiddifypanel import hutils
+from hiddifypanel.models import ConfigEnum, Domain, ProxyL3, ProxyProto, ProxyTransport, User, hconfig
+
+from .xray import OUTBOUND_LEVEL, is_muxable_agent
 
 
 def configs_as_json(domains: list[Domain], user: User, expire_days: int, remarks: str) -> list:
@@ -24,7 +26,7 @@ def configs_as_json(domains: list[Domain], user: User, expire_days: int, remarks
             tag += '#No Usage Limit'
         tag += ' 📅 '
         if expire_days < 1000:
-            tag += _(f'%(expire_days)s days', expire_days=expire_days)
+            tag += _('%(expire_days)s days', expire_days=expire_days)
         else:
             tag += '#No Time Limit'
         tag = tag.strip()
@@ -295,12 +297,12 @@ def add_stream_settings(base: dict, proxy: dict):
 
 
 def add_tcp_stream(ss: dict, proxy: dict):
-    
+
     if proxy.get('params',{}).get('headers',{}).get("type",'')=='none' or proxy['l3'] != ProxyL3.http:
         ss['tcpSettings'] = {
             'header':{'type':'none'}
         }
-    else:    
+    else:
         ss['tcpSettings'] = {
             'header': {
                 'type': 'http',
@@ -377,7 +379,7 @@ def add_xhttp_stream(ss: dict, proxy: dict):
     else:
         _add_xhttp_details(ss, proxy)
 
-        
+
 
 
 def _add_xhttp_details(ss: dict, proxy: dict):
@@ -391,14 +393,14 @@ def _add_xhttp_details(ss: dict, proxy: dict):
         }
     }
     if proxy.get("download"):
-        
+
         dlsettings = {
             "address":proxy['download'].get("server"),
             "port":proxy['port']
         }
         _add_xhttp_details(dlsettings, proxy['download'])
         _add_security(dlsettings, proxy, proxy['download'])
-        
+
         ss['xhttpSettings']['extra']['downloadSettings']=dlsettings
 
 

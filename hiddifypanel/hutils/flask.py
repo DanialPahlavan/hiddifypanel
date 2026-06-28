@@ -1,21 +1,26 @@
+import os
+import re
 from typing import List, Tuple
-from flask import current_app, flash as flask_flash, g, request
-from wtforms.validators import ValidationError
-from apiflask import abort as apiflask_abort
-from flask_babel import gettext as _
-from flask import url_for  # type: ignore
-from flask import abort as flask_abort
-from markupsafe import Markup
 from urllib.parse import urlparse
-from strenum import StrEnum
 
 import user_agents
-import re
-import os
+from apiflask import abort as apiflask_abort
+from flask import abort as flask_abort
+from flask import (
+    current_app,
+    g,
+    request,
+    url_for,  # type: ignore
+)
+from flask import flash as flask_flash
+from flask_babel import gettext as _
+from markupsafe import Markup
+from strenum import StrEnum
+from wtforms.validators import ValidationError
 
+from hiddifypanel import hutils
 from hiddifypanel.cache import cache
 from hiddifypanel.models import *
-from hiddifypanel import hutils
 
 
 def flash(message: str, category: str = "message"):

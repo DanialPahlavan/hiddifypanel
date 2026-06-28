@@ -1,13 +1,11 @@
 
-from urllib.parse import urlparse
 from apiflask import Schema
-from flask import g, request
-from apiflask.fields import String, Integer
+from apiflask.fields import Integer, String
 from flask import current_app as app
+from flask import g, request
 from flask.views import MethodView
+
 from hiddifypanel.auth import login_required
-from hiddifypanel.models.config import hconfig
-from hiddifypanel.models.config_enum import ConfigEnum
 from hiddifypanel.models.role import Role
 from hiddifypanel.panel import hiddify
 

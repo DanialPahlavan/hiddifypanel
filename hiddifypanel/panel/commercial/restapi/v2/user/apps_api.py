@@ -1,21 +1,22 @@
-from hiddifypanel.panel import hiddify
-from flask.views import MethodView
-from apiflask import fields
+from enum import auto
+from urllib.parse import urlparse
+
+import user_agents
+from apiflask import Schema, abort
+from apiflask.fields import URL, Enum, List, Nested, String
 from flask import current_app as app
 from flask import g, request
-from apiflask import Schema, abort
-from apiflask.fields import String, URL, Enum, List, Nested
+from flask.views import MethodView
 from flask_babel import lazy_gettext as _
-from urllib.parse import urlparse
-import user_agents
 from strenum import StrEnum
-from enum import auto
-from hiddifypanel.panel.user.user import get_common_data
-from hiddifypanel.hutils.utils import get_latest_release_url
+
 from hiddifypanel import hutils
-from hiddifypanel.models.role import Role
 from hiddifypanel.auth import login_required
 from hiddifypanel.hutils.flask import static_url_for
+from hiddifypanel.hutils.utils import get_latest_release_url
+from hiddifypanel.models.role import Role
+from hiddifypanel.panel.user.user import get_common_data
+
 # region App Api DTOs
 
 
@@ -176,7 +177,7 @@ class AppAPI(MethodView):
         clash_verge_rev_app_dto = self.__get_clash_verge_rev_app_dto()
         hiddify_next_app_dto = self.__get_hiddify_next_app_dto()
         return [
-            v2rayn_app_dto, v2rayng_app_dto, 
+            v2rayn_app_dto, v2rayng_app_dto,
             foxray_app_dto, shadowrocket_app_dto, streisand_app_dto,
             loon_app_dto, stash_app_dto,  singbox_app_dto, cmfa_app_dto, clash_verge_rev_app_dto, hiddify_next_app_dto
         ]
@@ -232,7 +233,7 @@ class AppAPI(MethodView):
         dto.guide_url = 'https://www.youtube.com/watch?v=o9L2sI2T53Q'
         dto.deeplink = f'v2rayn://install-sub/?url={self.user_panel_encoded_url}'
 
-        ins_url = f'https://github.com/2dust/v2rayN/releases/latest/download/v2rayN-windows-64-SelfContained-With-Core.7z'
+        ins_url = 'https://github.com/2dust/v2rayN/releases/latest/download/v2rayN-windows-64-SelfContained-With-Core.7z'
         dto.install = [self.__get_app_install_dto(AppInstallType.portable, ins_url)]
         return dto
 
@@ -244,7 +245,7 @@ class AppAPI(MethodView):
         dto.guide_url = ''
         dto.deeplink = f'clash://install-config?url={self.user_panel_encoded_url}'
 
-        latest_url, version = get_latest_release_url(f'https://github.com/MatsuriDayo/NekoBoxForAndroid')
+        latest_url, version = get_latest_release_url('https://github.com/MatsuriDayo/NekoBoxForAndroid')
         ins_url = latest_url.split('releases/')[0] + f'releases/download/{version}/NB4A-{version}-x86_64.apk'
         dto.install = [self.__get_app_install_dto(AppInstallType.apk, ins_url)]
         return dto
@@ -258,7 +259,7 @@ class AppAPI(MethodView):
         dto.deeplink = f'v2rayng://install-sub/?url={self.user_panel_encoded_url}'
 
         # make v2rayng latest version url download
-        latest_url, version = get_latest_release_url(f'https://github.com/2dust/v2rayNG/')
+        latest_url, version = get_latest_release_url('https://github.com/2dust/v2rayNG/')
         github_ins_url = latest_url.split('releases/')[0] + f'releases/download/{version}/v2rayNG_{version}_universal.apk'
         google_play_ins_url = 'https://play.google.com/store/apps/details?id=com.v2ray.ang'
         dto.install = [self.__get_app_install_dto(AppInstallType.apk, github_ins_url), self.__get_app_install_dto(AppInstallType.google_play, google_play_ins_url)]
@@ -339,7 +340,7 @@ class AppAPI(MethodView):
 
         if self.platform == Platform.all:
             platform = [Platform.windows, Platform.linux, Platform.mac]
-        
+
         def get_link(p):
             match p:
                 case Platform.windows:
@@ -387,7 +388,7 @@ class AppAPI(MethodView):
             ins_url = ''
             match install_type:
                 case AppInstallType.apk:
-                    latest_url, version = get_latest_release_url(f'https://github.com/SagerNet/sing-box')
+                    latest_url, version = get_latest_release_url('https://github.com/SagerNet/sing-box')
                     ins_url = latest_url.split('releases/')[0] + f'releases/download/{version}/SFA-{version}-universal.apk'
                     def remove_v_from_filename(url):
                         parts = url.split('/')
@@ -400,7 +401,7 @@ class AppAPI(MethodView):
                 case AppInstallType.google_play:
                     ins_url = 'https://play.google.com/store/apps/details?id=io.nekohasekai.sfa'
                 case AppInstallType.dmg:
-                    latest_url, version = get_latest_release_url(f'https://github.com/SagerNet/sing-box')
+                    latest_url, version = get_latest_release_url('https://github.com/SagerNet/sing-box')
                     ins_url = latest_url.split('releases/')[0] + f'releases/download/{version}/SFM-{version}-universal.dmg'
                     def remove_v_from_filename(url):
                         parts = url.split('/')
@@ -466,7 +467,7 @@ class AppAPI(MethodView):
         dto.guide_url = ''
         dto.deeplink = f'clash://install-config/?url={self.user_panel_encoded_url}&name={self.profile_title}'
 
-        latest_url, version = get_latest_release_url(f'https://github.com/MetaCubeX/ClashMetaForAndroid')
+        latest_url, version = get_latest_release_url('https://github.com/MetaCubeX/ClashMetaForAndroid')
         ins_url = latest_url.split('releases/')[0] + f'releases/download/{version}/cmfa-{version}-meta-universal-release.apk'
         def remove_v_from_filename(url):
             parts = url.split('/')

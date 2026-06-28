@@ -1,13 +1,14 @@
-from hiddifypanel.drivers.telemt_api import TelemtApi
+from collections import defaultdict
 
-from .ssh_liberty_bridge_api import SSHLibertyBridgeApi
-from .xray_api import XrayApi
-from .singbox_api import SingboxApi
-from .wireguard_api import WireguardApi
+from hiddifypanel.drivers.telemt_api import TelemtApi
 from hiddifypanel.models import *
 from hiddifypanel.panel import hiddify
-from collections import defaultdict
 from loguru import logger
+
+from .singbox_api import SingboxApi
+from .ssh_liberty_bridge_api import SSHLibertyBridgeApi
+from .wireguard_api import WireguardApi
+from .xray_api import XrayApi
 
 drivers = [XrayApi(), SingboxApi(), SSHLibertyBridgeApi(), WireguardApi(),TelemtApi()]
 
@@ -18,7 +19,6 @@ def enabled_drivers():
 
 def get_users_usage(reset=True):
     res = {}
-    from hiddifypanel.database import db
 
     # users = db.session.query(User).all()
     # users = list(User.query.all())

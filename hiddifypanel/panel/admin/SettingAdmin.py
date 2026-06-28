@@ -1,28 +1,29 @@
-from hiddifypanel.cache import cache
-from hiddifypanel import __version__
-from hiddifypanel.panel import hiddify, custom_widgets
-from hiddifypanel.database import db
-from hiddifypanel.models import *
-from hiddifypanel.models import BoolConfig, StrConfig, ConfigEnum, hconfig, ConfigCategory
 import re
-import flask_babel
-import flask_babel
-from flask_babel import lazy_gettext as _
-# from flask_babelex import gettext as _
-from flask import render_template, g  # type: ignore
-from markupsafe import Markup
 
-from hiddifypanel.hutils.flask import hurl_for
-from flask import current_app as app
-from hiddifypanel import hutils
-from hiddifypanel.auth import login_required
+import flask_babel
 import wtforms as wtf
+from bleach import ALLOWED_TAGS as BLEACH_ALLOWED_TAGS
+from bleach import clean as bleach_clean
+
+# from flask_babelex import gettext as _
+from flask import g, render_template  # type: ignore
+from flask_babel import lazy_gettext as _
 from flask_bootstrap import SwitchField
 
 # from gettext import gettext as _
 from flask_classful import FlaskView
 from flask_wtf import FlaskForm
-from bleach import clean as bleach_clean, ALLOWED_TAGS as BLEACH_ALLOWED_TAGS
+from markupsafe import Markup
+
+from hiddifypanel import __version__, hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.cache import cache
+from hiddifypanel.database import db
+from hiddifypanel.hutils.flask import hurl_for
+from hiddifypanel.models import *
+from hiddifypanel.models import BoolConfig, ConfigCategory, ConfigEnum, StrConfig, hconfig
+from hiddifypanel.panel import custom_widgets, hiddify
+
 ALLOWED_TAGS = set([*BLEACH_ALLOWED_TAGS, "h1", "h2", "h3", "h4", "p"])
 
 
@@ -41,7 +42,7 @@ class SettingAdmin(FlaskView):
         if form.validate_on_submit():
 
             boolconfigs = BoolConfig.query.filter(BoolConfig.child_id == Child.current().id).all()
-            bool_types = {c.key: 'bool' for c in boolconfigs}
+            {c.key: 'bool' for c in boolconfigs}
 
             old_configs = get_hconfigs()
             changed_configs = {}
@@ -150,7 +151,7 @@ class SettingAdmin(FlaskView):
         res = ""
         strconfigs = StrConfig.query.all()
         boolconfigs = BoolConfig.query.all()
-        bool_types = {c.key: 'bool' for c in boolconfigs}
+        {c.key: 'bool' for c in boolconfigs}
 
         configs = [*boolconfigs, *strconfigs]
         for cat in ConfigCategory:
@@ -195,7 +196,7 @@ def get_config_form():
                 csrf = False
             description_for_fieldset = wtf.TextAreaField("", description=_(f'config.{cat}.description'), render_kw={"class": "d-none"})
         for c2 in cat_configs:
-            if not (c2 in configs_key):
+            if c2 not in configs_key:
                 continue
             c = configs_key[c2]
             if hutils.node.is_parent():
@@ -214,7 +215,7 @@ def get_config_form():
                                         choices=[("disable", _("Disable")), ("all", _("All")), ("custom", _("Only Blocked and Local websites"))],
                                         description=_(f"config.{c.key}.description"),
                                         default=hconfig(c.key))
-            
+
             elif c.key == ConfigEnum.lang or c.key == ConfigEnum.admin_lang:
                 field = wtf.SelectField(
                     _(f"config.{c.key}.label"),
@@ -229,7 +230,7 @@ def get_config_form():
                 if hconfig(c.key) == "develop":
                     package_modes.append(("develop", _("Develop")))
                 field = wtf.SelectField(_(f"config.{c.key}.label"), choices=package_modes, description=_(f"config.{c.key}.description"), default=hconfig(c.key))
-            
+
 
             # the shadowsocks2022_method is hidden now, because it only has one option to choose
             # elif c.key == ConfigEnum.shadowsocks2022_method:
@@ -285,7 +286,7 @@ def get_config_form():
             elif isinstance(c2.type, type) and issubclass(c2.type,config_enum.HEnum) and c2.type!=str:
                 items=[(f'{k}', _(f'config.{c.key}.{k}')) for k in c2.type]
                 field = wtf.SelectField(_(f"config.{c.key}.label"), choices=items, description=_(f"config.{c.key}.description"), default=hconfig(c.key))
-                
+
             else:
                 render_kw = {'class': "ltr"}
                 validators = []

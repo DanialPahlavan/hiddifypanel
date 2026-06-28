@@ -1,12 +1,10 @@
 import datetime
-from datetime import timedelta, date
+from datetime import date, timedelta
 
 from flask import g
 from sqlalchemy import func
 
-
 from hiddifypanel.database import db
-
 
 
 class DailyUsage(db.Model):

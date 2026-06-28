@@ -1,29 +1,24 @@
+import base64
 import glob
+import ipaddress
+import os
+import random
+import re
+import socket
+import ssl
+import time
+import urllib.request
 from typing import List, Literal, Set, Union
 from urllib.parse import urlparse
 
+import dns.resolver
+import psutil
+import requests
 from dns.rdtypes.svcbbase import ECHParam
 
-import urllib.request
-import ipaddress
-from hiddifypanel.hutils.network.auto_ip_selector import IPASN
-import requests
-import random
-import socket
-import time
-import ssl
-import re
-import os
-import ipaddress
-import psutil
-import socket
-from typing import List, Union, Literal
-
-from hiddifypanel.models import *
 from hiddifypanel.cache import cache
-
-import dns.resolver
-import base64
+from hiddifypanel.hutils.network.auto_ip_selector import IPASN
+from hiddifypanel.models import *
 
 
 def get_domain_ip_old(domain: str, retry: int = 3, version: Literal[4, 6] | None = None) -> Union[ipaddress.IPv4Address, ipaddress.IPv6Address, None]:
@@ -57,7 +52,7 @@ def get_domain_ip_old(domain: str, retry: int = 3, version: Literal[4, 6] | None
 
 def get_domain_ip(domain: str, retry: int = 3, version: Literal[4, 6] | None = None) -> Union[ipaddress.IPv4Address, ipaddress.IPv6Address, None]:
     ips=get_domain_ips_cached(domain)
-    ips=[ip for ip in ips if version==None or (version==4 and isinstance(ip,ipaddress.IPv4Address)) or  (version==6 and isinstance(ip,ipaddress.IPv6Address)) ]
+    ips=[ip for ip in ips if version is None or (version==4 and isinstance(ip,ipaddress.IPv4Address)) or  (version==6 and isinstance(ip,ipaddress.IPv6Address)) ]
     if ips:
         return random.sample(ips,1)[0]
     return get_domain_ip_old(domain,0)
@@ -66,7 +61,7 @@ def get_domain_ip(domain: str, retry: int = 3, version: Literal[4, 6] | None = N
 def get_domain_ips_cached(domain: str, retry: int = 3) -> Set[Union[ipaddress.IPv4Address, ipaddress.IPv6Address]]:
     try:
         return set(ipaddress.ip_address(domain))
-    except:
+    except Exception:
         return get_domain_ips(domain,retry)
 
 def get_domain_ips(domain: str, retry: int = 3) -> Set[Union[ipaddress.IPv4Address, ipaddress.IPv6Address]]:
@@ -192,11 +187,11 @@ def get_ip(version: Literal[4, 6], retry: int = 5) -> ipaddress.IPv4Address | ip
 
 
 def get_random_user_agent():
-    
+
     uas = requests.get('https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/index.json').json()
     if uas:
         return random.sample(uas,1)[0]
-    return 
+    return
 def get_random_domains(count: int = 1, retry: int = 6) -> List[str]:
     try:
         region="CN" if retry<3 else "IR"
@@ -290,7 +285,7 @@ def is_domain_use_letsencrypt(domain: str) -> bool:
 @cache.cache(ttl=300)
 def get_direct_host_or_ip(prefer_version: int) -> str:
     from hiddifypanel.models import Domain
-    direct = Domain.query.filter(Domain.mode == DomainType.direct, Domain.sub_link_only == False).first()
+    direct = Domain.query.filter(Domain.mode == DomainType.direct, not Domain.sub_link_only).first()
     if not direct:
         direct = Domain.query.filter(Domain.mode == DomainType.direct).first()
     if direct:
@@ -394,7 +389,7 @@ def get_ip_asn(ip: ipaddress.IPv4Address | ipaddress.IPv6Address | str) -> str:
         if asn := IPASN.get(str(ip)):
             return str(asn.get('autonomous_system_organization', ''))
         return ''
-    except:
+    except Exception:
         return ''
 
 
@@ -411,7 +406,7 @@ def is_ip(input: str):
     try:
         _ = ipaddress.ip_address(input)
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -445,11 +440,10 @@ def get_ech_info(domain):
 def all_public_ports():
         tcp_ports={80:"http",443:"tls"}
         udp_ports={443:"quic",}
-        log=[]
         if hconfig(ConfigEnum.wireguard_enable):
             udp_ports[hconfig(ConfigEnum.wireguard_port)]="wireguard"
-            
-            
+
+
         if hconfig(ConfigEnum.shadowsocks2022_enable) and (p:=hconfig(ConfigEnum.shadowsocks2022_port)):
             udp_ports[p]="shadowsocks_2022"
             tcp_ports[p]="shadowsocks_2022"
@@ -460,7 +454,7 @@ def all_public_ports():
                 udp_ports[p]="mieru"
         if hconfig(ConfigEnum.ssh_server_enable):
             tcp_ports[hconfig(ConfigEnum.ssh_server_port)]="ssh"
-        
+
         for p in (hconfig(ConfigEnum.tls_ports)).split(','):
             tcp_ports[p]="tls"
             udp_ports[p]="quic"
@@ -478,7 +472,7 @@ def all_public_ports():
                 try:
                     if ip:=int(p):
                         r[ip]=v
-                except:
+                except Exception:
                     pass
             return {k:v for k,v in sorted(r.items())}
         return {"tcp":to_int(tcp_ports),"udp":to_int(udp_ports)}

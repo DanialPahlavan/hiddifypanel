@@ -1,17 +1,16 @@
-from flask.views import MethodView
 from apiflask import Schema, abort
-from flask import g
-from flask import current_app as app
 from apiflask.fields import String
-from hiddifypanel.auth import login_required
+from flask import current_app as app
+from flask import g
+from flask.views import MethodView
 
-from hiddifypanel.models.config import get_hconfigs, hconfig
+from hiddifypanel.auth import login_required
+from hiddifypanel.models.config import hconfig
 from hiddifypanel.models.config_enum import ConfigEnum
 from hiddifypanel.models.domain import DomainType
 from hiddifypanel.models.role import Role
-
 from hiddifypanel.panel.user.user import get_common_data
-from apiflask import fields
+
 
 class MtproxySchema(Schema):
     link = String(required=True)

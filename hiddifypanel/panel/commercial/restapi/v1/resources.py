@@ -1,12 +1,13 @@
-from flask import jsonify, request
-from apiflask import abort
-from flask_restful import Resource
 # from flask_simplelogin import login_required
-import datetime
-from hiddifypanel.models import *
+
+from apiflask import abort
+from flask import jsonify, request
+from flask_restful import Resource
+
 from hiddifypanel.auth import login_required
-from hiddifypanel.panel import hiddify
 from hiddifypanel.drivers import user_driver
+from hiddifypanel.models import *
+from hiddifypanel.panel import hiddify
 
 
 class UserResource(Resource):
@@ -69,7 +70,7 @@ class AdminUserResource(Resource):
 
     def post(self):
         data = request.json
-        uuid = data.get('uuid') or abort(422, "Parameter issue: 'uuid'")
+        data.get('uuid') or abort(422, "Parameter issue: 'uuid'")
         AdminUser.add_or_update(**data)  # type: ignore
 
         return jsonify({'status': 200, 'msg': 'ok'})

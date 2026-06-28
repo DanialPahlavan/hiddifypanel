@@ -1,23 +1,25 @@
 import re
-import flask_babel
 import uuid
-# from flask_babelex import lazy_gettext as _
-from flask import render_template, g, request
-from flask_babel import gettext as _
-from markupsafe import Markup
-import wtforms as wtf
-from flask_wtf import FlaskForm
-from flask_bootstrap import SwitchField
-from hiddifypanel.panel import hiddify
-from flask_classful import FlaskView
-from wtforms.validators import ValidationError, Length, InputRequired
-# from gettext import gettext as _
 
-from hiddifypanel.models import Domain, DomainType, StrConfig, ConfigEnum, get_hconfigs
-from hiddifypanel.database import db
-from hiddifypanel.auth import login_required
+import flask_babel
+import wtforms as wtf
+
+# from flask_babelex import lazy_gettext as _
+from flask import g, render_template, request
+from flask_babel import gettext as _
+from flask_bootstrap import SwitchField
+from flask_classful import FlaskView
+from flask_wtf import FlaskForm
+from wtforms.validators import InputRequired, Length, ValidationError
+
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.database import db
 from hiddifypanel.models import *
+
+# from gettext import gettext as _
+from hiddifypanel.models import ConfigEnum, Domain, DomainType, StrConfig, get_hconfigs
+from hiddifypanel.panel import hiddify
 
 
 class QuickSetup(FlaskView):
@@ -104,10 +106,10 @@ def get_password_form(empty=False):
             _("user.password.title"),
             description=_("user.password.description"),
             default="",validators=[
-                
-                InputRequired(message=_("user.password.validation-required")), 
+
+                InputRequired(message=_("user.password.validation-required")),
                 Length(min=8, message=_("user.password.validation-lenght"))
-        
+
             ])
         password_submit = wtf.SubmitField(_('Submit'))
 
@@ -128,7 +130,7 @@ def get_password_form(empty=False):
 def get_proxy_form(empty=False):
     class ProxyForm(FlaskForm):
         step = wtf.HiddenField(default="3")
-        description_for_fieldset = wtf.TextAreaField("", description=_(f'quicksetup.proxy_cat.description'), render_kw={"class": "d-none"})
+        description_for_fieldset = wtf.TextAreaField("", description=_('quicksetup.proxy_cat.description'), render_kw={"class": "d-none"})
 
         def post(self, view):
 
@@ -154,7 +156,7 @@ def get_proxy_form(empty=False):
             continue
         if not cf.key.endswith("_enable") or cf.key in [ConfigEnum.hysteria_obfs_enable, ConfigEnum.tls_padding_enable]:
             continue
-        
+
         field = SwitchField(_(f'config.{cf.key}.label'), default=cf.value, description=_(f'config.{cf.key}.description'))
         setattr(ProxyForm, f'{cf.key}', field)
     setattr(ProxyForm, "submit_global", wtf.fields.SubmitField(_('Submit')))
@@ -176,7 +178,7 @@ def get_quick_setup_form(empty=False):
 
     class BasicConfigs(FlaskForm):
         step = wtf.HiddenField(default="2")
-        description_for_fieldset = wtf.TextAreaField("", description=_(f'quicksetup.proxy_cat.description'), render_kw={"class": "d-none"})
+        description_for_fieldset = wtf.TextAreaField("", description=_('quicksetup.proxy_cat.description'), render_kw={"class": "d-none"})
         domain_regex = "^([A-Za-z0-9\\-\\.]+\\.[a-zA-Z]{2,})$"
 
         domain_validators = [

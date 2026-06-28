@@ -1,5 +1,6 @@
-from typing import TYPE_CHECKING
 import importlib
+from typing import TYPE_CHECKING
+
 
 class LazyLoader:
     def __init__(self, module_name: str,package=None):
@@ -14,20 +15,22 @@ class LazyLoader:
         return getattr(self._module, item)
 
 if TYPE_CHECKING:
-    from . import system
-    from . import importer
-    from . import github_issue
-    from . import flask
-    from . import convert
-    from . import random
-    from . import encode
-    from . import auth
-    from . import model
-    from . import crypto
-    from . import proxy
-    from . import node
-    from . import utils
-    from . import network
+    from . import (
+        auth,
+        convert,
+        crypto,
+        encode,
+        flask,
+        github_issue,
+        importer,
+        model,
+        network,
+        node,
+        proxy,
+        random,
+        system,
+        utils,
+    )
 else:
     # Define modules for lazy loading
     network = LazyLoader(".network",__name__)

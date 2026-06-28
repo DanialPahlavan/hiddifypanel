@@ -1,7 +1,8 @@
 from flask_babel import gettext as _
 
-from hiddifypanel.panel.user.user import get_common_data
 from hiddifypanel.models import User
+from hiddifypanel.panel.user.user import get_common_data
+
 from . import bot
 
 

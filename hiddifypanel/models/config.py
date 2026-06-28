@@ -1,15 +1,13 @@
 from typing import Optional
-from hiddifypanel.models.config_enum import ConfigEnum, LogLevel, PanelMode, Lang
-from flask import g
-
-from hiddifypanel import Events
-from hiddifypanel.database import db
-from hiddifypanel.cache import cache
-from hiddifypanel.models.child import Child, ChildMode
-from sqlalchemy import Column, String, Boolean, Enum, ForeignKey, Integer
-from strenum import StrEnum
 
 from loguru import logger
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+
+from hiddifypanel import Events
+from hiddifypanel.cache import cache
+from hiddifypanel.database import db
+from hiddifypanel.models.child import Child, ChildMode
+from hiddifypanel.models.config_enum import ConfigEnum
 
 
 class BoolConfig(db.Model):
@@ -93,7 +91,7 @@ def set_hconfig(key: ConfigEnum, value: str | int | bool, child_id: int | None =
     if child_id is None:
         child_id = Child.current().id
 
-    if key.type == int and value != None:
+    if key.type == int and value is not None:
         int(value)  # for testing int
 
     # hconfig.invalidate(key, child_id)
@@ -139,7 +137,7 @@ def get_hconfigs(child_id: int | None = None, json=False) -> dict:
         child_id = Child.current().id
 
     return {**{f'{u.key}' if json else u.key: u.value for u in BoolConfig.query.filter(BoolConfig.child_id == child_id).all() if u.key.type == bool},
-            **{f'{u.key}' if json else u.key: int(u.value) if u.key.type == int and u.value != None else u.value for u in StrConfig.query.filter(StrConfig.child_id == child_id).all() if u.key.type != bool},
+            **{f'{u.key}' if json else u.key: int(u.value) if u.key.type == int and u.value is not None else u.value for u in StrConfig.query.filter(StrConfig.child_id == child_id).all() if u.key.type != bool},
             }
 
 
@@ -155,7 +153,7 @@ def add_or_update_config(commit: bool = True, child_id: int | None = None, overr
     c = config['key']
     try:
         ckey = ConfigEnum(c)
-    except:
+    except Exception:
         return
     if c == ConfigEnum.unique_id and not override_unique_id:
         return

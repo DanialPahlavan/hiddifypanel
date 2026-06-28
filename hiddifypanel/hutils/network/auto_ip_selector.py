@@ -1,16 +1,16 @@
-from flask_babel import gettext as _
-from typing import List, Union
-from flask import request
-from loguru import logger
-import maxminddb
 import random
-import os
 import re
-import sys
+from typing import List, Union
+
+import maxminddb
+from flask import request
+from flask_babel import gettext as _
+from loguru import logger
+
+from hiddifypanel import hutils
 from hiddifypanel.cache import cache
 from hiddifypanel.models.config import hconfig
 from hiddifypanel.models.config_enum import ConfigEnum
-from hiddifypanel import hutils
 
 DEFAULT_IPs = """
 mci.ircf.space		MCI
@@ -42,7 +42,7 @@ try:
     IPASN = maxminddb.open_database('GeoLite2-ASN.mmdb')
     IPCOUNTRY = maxminddb.open_database('GeoLite2-Country.mmdb')
     # __ipcity = maxminddb.open_database('GeoLite2-City.mmdb')
-except BaseException as e:
+except BaseException:
     logger.error("Error can not load maxminddb")
     IPASN = {}
     IPCOUNTRY = {}

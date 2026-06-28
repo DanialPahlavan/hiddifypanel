@@ -1,19 +1,18 @@
 import datetime
-import uuid
 import json
 import os
+import uuid
+
 import click
 from dateutil import relativedelta
-
+from loguru import logger
 
 from hiddifypanel import hutils
-
+from hiddifypanel.database import db
 from hiddifypanel.models import *
 from hiddifypanel.panel import hiddify, usage
-from hiddifypanel.database import db
 from hiddifypanel.panel.init_db import init_db
 
-from loguru import logger
 
 def drop_db():
     """Cleans database"""
@@ -31,6 +30,8 @@ def downgrade():
 
 
 from celery import shared_task
+
+
 def backup():
     backup_task()
 
@@ -46,7 +47,7 @@ def backup_task():
         from hiddifypanel.panel.commercial.telegrambot import bot, register_bot
         if not bot.username:
             register_bot(True)
-        
+
         for admin in db.session.query(AdminUser).filter(AdminUser.mode == AdminMode.super_admin, AdminUser.telegram_id is not None,AdminUser.telegram_id!=0).all():
             caption = ("Backup \n" + admin_links())
             with open(dst, 'rb') as document:
@@ -71,7 +72,7 @@ def admin_links():
     admin_links = f"Not Secure (do not use it - only if others not work):\n   {hiddify.get_account_panel_link(owner, server_ip,is_https=True)}\n"
 
     domains = Domain.get_domains()
-    admin_links += f"Secure:\n"
+    admin_links += "Secure:\n"
     if not any([d for d in domains if 'sslip.io' not in d.domain]):
         admin_links += f"   (not signed) {hiddify.get_account_panel_link(owner, server_ip)}\n"
 
@@ -136,7 +137,7 @@ def init_app(app):
     @ click.option("--key", "-k")
     @ click.option("--val", "-v")
     def set_setting(key, val):
-        old_hconfigs = get_hconfigs()
+        get_hconfigs()
         hiddify.add_or_update_config(key=key, value=val)
 
         return "success"
@@ -146,7 +147,7 @@ def init_app(app):
     @ app.cli.command()
     @ click.option("--config", "-c")
     def import_config(config):
-        next10year = datetime.date.today() + relativedelta.relativedelta(years=10)
+        datetime.date.today() + relativedelta.relativedelta(years=10)
         data = []
         if "USER_SECRET" in config:
             secrets = config["USER_SECRET"].split(";")

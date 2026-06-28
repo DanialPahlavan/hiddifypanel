@@ -1,6 +1,7 @@
 import random
 import string
-from hiddifypanel.models import hconfig, ConfigEnum
+
+from hiddifypanel.models import ConfigEnum, hconfig
 
 
 def get_random_string(min_: int = 10, max_: int = 30) -> str:
@@ -38,7 +39,7 @@ def __is_in_used_port(port):
                 for p in (hconfig(k) or "").split(","):
                     if p and __is_port_in_range(port, p, 100):
                         return True
-    
+
     for p in [443, 80, 9000, 10085, 10086]:
         if __is_port_in_range(port, p, 100):
             return True

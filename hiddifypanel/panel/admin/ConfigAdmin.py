@@ -1,15 +1,14 @@
 import re
 import uuid
-from hiddifypanel import hutils
-from hiddifypanel.models.role import Role
-from hiddifypanel.panel import hiddify
-from hiddifypanel.auth import login_required
 
 from wtforms.validators import ValidationError
 
+from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
 from hiddifypanel.models import ConfigEnum, Domain
+from hiddifypanel.models.role import Role
+
 from .adminlte import AdminLTEModelView
-from flask import current_app
 
 
 class ConfigAdmin(AdminLTEModelView):
@@ -27,7 +26,7 @@ class ConfigAdmin(AdminLTEModelView):
     }
 
     def is_accessible(self):
-        if login_required(roles={Role.super_admin})(lambda: True)() != True:
+        if not login_required(roles={Role.super_admin})(lambda: True)():
             return False
         return True
 
@@ -65,4 +64,4 @@ class ConfigAdmin(AdminLTEModelView):
             if not re.match("^([A-Za-z0-9\\-.]+\\.[a-zA-Z]{2,})$", model.value):
                 raise ValidationError('Invalid domain: e.g., www.google.com')
             if len(Domain.query.filter(Domain.domain == model.value).all()) > 0:
-                raise ValidationError(f"Domain model.value is exist in domains section. Use a fake domain")
+                raise ValidationError("Domain model.value is exist in domains section. Use a fake domain")

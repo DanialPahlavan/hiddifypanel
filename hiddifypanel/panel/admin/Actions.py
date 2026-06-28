@@ -1,17 +1,17 @@
-import urllib.request
 import json
-from flask_classful import FlaskView, route
-from flask import render_template, request, redirect, g
-from hiddifypanel.hutils.flask import hurl_for
-from hiddifypanel.auth import login_required
-from flask import current_app as app
-from flask_babel import gettext as _
+import urllib.request
 
+from flask import current_app as app
+from flask import g, redirect, render_template, request
+from flask_babel import gettext as _
+from flask_classful import FlaskView, route
 
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.hutils.flask import hurl_for
 from hiddifypanel.models import *
 from hiddifypanel.panel import hiddify, usage
-from hiddifypanel.panel.run_commander import commander, Command
+from hiddifypanel.panel.run_commander import Command, commander
 
 
 class Actions(FlaskView):
@@ -66,7 +66,7 @@ class Actions(FlaskView):
                 udp_ports.add(p)
         if hconfig(ConfigEnum.ssh_server_enable):
             tcp_ports.add(hconfig(ConfigEnum.ssh_server_port))
-        
+
         for p in (hconfig(ConfigEnum.tls_ports)).split(','):
             tcp_ports.add(p)
             udp_ports.add(p)
@@ -84,10 +84,10 @@ class Actions(FlaskView):
                 try:
                     if ip:=int(p):
                         r.add(ip)
-                except:
+                except Exception:
                     pass
         return {"tcp":to_int(tcp_ports),"udp":to_int(udp_ports)}
-    
+
 
     @login_required(roles={Role.super_admin})
     @route('reinstall', methods=['POST'])
@@ -109,7 +109,6 @@ class Actions(FlaskView):
         # hutils.flask.flash(f'complete_install={complete_install} domain_changed={domain_changed} ', 'info')
         # return render_template("result.html")
         # hiddify.add_temporary_access()
-        file = "install.sh" if complete_install else "apply_configs.sh"
         try:
             server_ip = urllib.request.urlopen('https://v4.ident.me/').read().decode('utf8')
         except BaseException:
@@ -185,6 +184,7 @@ class Actions(FlaskView):
     def get_some_random_reality_friendly_domain(self):
         test_domain = request.args.get("test_domain")
         import ping3
+
         from hiddifypanel.hutils.network.auto_ip_selector import IPASN, IPCOUNTRY
         ipv4 = hutils.network.get_ip_str(4)
         server_country = (IPCOUNTRY.get(ipv4) or {}).get('country', {}).get('iso_code', 'unknown')

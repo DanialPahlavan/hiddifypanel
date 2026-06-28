@@ -1,9 +1,11 @@
-from typing import Optional, Union, Type
-from apiflask import Schema, fields
 import traceback
+from typing import Optional, Type, Union
+
 import requests
+from apiflask import Schema, fields
 from loguru import logger
-from hiddifypanel.models import hconfig, ConfigEnum
+
+from hiddifypanel.models import ConfigEnum, hconfig
 
 
 class NodeApiErrorSchema(Schema):

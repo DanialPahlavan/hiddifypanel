@@ -1,6 +1,8 @@
 
 from typing import TYPE_CHECKING
-from hiddifypanel.models import hconfig, ConfigEnum
+
+from hiddifypanel.models import ConfigEnum, hconfig
+
 if TYPE_CHECKING:
     import cloudflare
 
@@ -34,7 +36,7 @@ def add_or_update_dns_record(domain: str, ip: str, dns_type: str = "A", proxied:
         dns_name = domain[:-len(zone.name)].replace('.', '')
         # if the input domain is root itself
         dns_name = '@' if not dns_name else dns_name
-        
+
         if not record:
             api_res = __cf.dns.records.create(zone_id=zone.id, name=dns_name,type=dns_type,content=ip,proxied=proxied)
         else:
@@ -57,13 +59,13 @@ def delete_dns_record(domain: str) -> bool:
         return False
     records = [__get_dns_record(zone, domain,"A"),__get_dns_record(zone, domain,"AAAA")]
     res=False
-    
+
     for record in records:
         if record and zone:
             api_res = __cf.dns.records.delete(dns_record_id=record.id,zone_id=zone.id)
             if api_res.id == record.id:
                 res=True
-            
+
     return res
 
 

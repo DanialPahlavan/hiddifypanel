@@ -1,17 +1,15 @@
-from flask import render_template, request, g, redirect
-from hiddifypanel.hutils.flask import hurl_for
-from flask_classful import FlaskView, route
-from flask_babel import lazy_gettext as _
+
 from apiflask import abort
-import datetime
+from flask import g, redirect, render_template, request
+from flask_babel import lazy_gettext as _
+from flask_classful import FlaskView, route
 
-
+from hiddifypanel import hutils
 from hiddifypanel.auth import login_required
 from hiddifypanel.database import db
-from hiddifypanel.panel import hiddify
+from hiddifypanel.hutils.flask import hurl_for
 from hiddifypanel.models import *
-from hiddifypanel import hutils
-import hiddifypanel
+from hiddifypanel.panel import hiddify
 
 
 class Dashboard(FlaskView):
@@ -65,7 +63,7 @@ class Dashboard(FlaskView):
         if hutils.network.is_ssh_password_authentication_enabled():
             hutils.flask.flash(_('serverssh.password-login.warning'), "warning")  # type: ignore
 
-    # except:
+    # except Exception:
     #     hutils.flask.flash((_('Error!!!')),'info')
 
         stats = {'system': hutils.system.system_stats(), 'top5': hutils.system.top_processes()}

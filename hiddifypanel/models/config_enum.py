@@ -1,9 +1,8 @@
-from enum import auto, Enum
 import os
-from typing import Union
+from enum import auto
 
-from strenum import StrEnum
 from fast_enum import FastEnum
+from strenum import StrEnum
 
 
 class HEnum(StrEnum):
@@ -37,7 +36,7 @@ class MieruHandshake(HEnum):
     HANDSHAKE_DEFAULT = auto()
     HANDSHAKE_NO_WAIT = auto()
     HANDSHAKE_STANDARD = auto()
-    
+
 
 class LogLevel(HEnum):
     TRACE = auto()
@@ -144,7 +143,7 @@ class ConfigEnum(metaclass=FastEnum):
     reality_public_key = _StrConfigDscr(ConfigCategory.reality, ApplyMode.apply_config, hide_in_virtual_child=True)
     reality_port = _StrConfigDscr(ConfigCategory.hidden, ApplyMode.apply_config, hide_in_virtual_child=True)
     special_port = _StrConfigDscr(ConfigCategory.reality, ApplyMode.apply_config, hide_in_virtual_child=True)
-    
+
 
     restls1_2_domain = _StrConfigDscr(ConfigCategory.hidden)
     restls1_3_domain = _StrConfigDscr(ConfigCategory.hidden)
@@ -159,7 +158,7 @@ class ConfigEnum(metaclass=FastEnum):
     additional_configs_urls =  _StrConfigDscr(ConfigCategory.additional_configs)
     additional_configs_singbox =  _StrConfigDscr(ConfigCategory.additional_configs)
     additional_configs_xrayjson =  _StrConfigDscr(ConfigCategory.additional_configs)
-    
+
     # region child-parent
     # deprecated
     is_parent = _BoolConfigDscr(ConfigCategory.hidden)
@@ -182,7 +181,7 @@ class ConfigEnum(metaclass=FastEnum):
     admin_lang = _TypedConfigDscr(Lang, ConfigCategory.admin)
     admin_secret = _StrConfigDscr(ConfigCategory.hidden)  # removed
 
-    default_useragent_string = _StrConfigDscr(ConfigCategory.general)    
+    default_useragent_string = _StrConfigDscr(ConfigCategory.general)
     use_ip_in_config=_BoolConfigDscr(ConfigCategory.hidden)
     # tls
     tls_ports = _StrConfigDscr(ConfigCategory.tls, ApplyMode.apply_config)
@@ -195,7 +194,7 @@ class ConfigEnum(metaclass=FastEnum):
     tls_padding_enable = _BoolConfigDscr(ConfigCategory.tls_trick, ApplyMode.apply_config)
     tls_padding_length = _StrConfigDscr(ConfigCategory.tls_trick, ApplyMode.apply_config)
     tls_ech_enable = _BoolConfigDscr(ConfigCategory.tls, ApplyMode.apply_config)
-    
+
 
     # mux
     mux_enable = _BoolConfigDscr(ConfigCategory.mux, ApplyMode.apply_config)
@@ -287,8 +286,8 @@ class ConfigEnum(metaclass=FastEnum):
     reality_enable = _BoolConfigDscr(ConfigCategory.proxies, ApplyMode.apply_config)
     tcp_enable = _BoolConfigDscr(ConfigCategory.proxies, ApplyMode.apply_config)
     quic_enable = _BoolConfigDscr(ConfigCategory.proxies, ApplyMode.apply_config)
-    
-    xtls_enable = _BoolConfigDscr(ConfigCategory.hidden, ApplyMode.apply_config)#deprecated 
+
+    xtls_enable = _BoolConfigDscr(ConfigCategory.hidden, ApplyMode.apply_config)#deprecated
     h2_enable = _BoolConfigDscr(ConfigCategory.proxies, ApplyMode.apply_config)#deprecated
 
     db_version = _StrConfigDscr(ConfigCategory.hidden)
@@ -330,9 +329,9 @@ class ConfigEnum(metaclass=FastEnum):
     ssh_host_ecdsa_pub = _StrConfigDscr(ConfigCategory.hidden)
     ssh_host_dsa_pk = _StrConfigDscr(ConfigCategory.hidden)
     ssh_host_dsa_pub = _StrConfigDscr(ConfigCategory.hidden)
-    
-    
-    
+
+
+
 
     hiddifycli_enable = _BoolConfigDscr(ConfigCategory.hidden, ApplyMode.reinstall)
 

@@ -1,20 +1,18 @@
-from hiddifypanel.models import *
-from hiddifypanel.panel.admin.adminlte import AdminLTEModelView
-from flask_babel import gettext as __
-from flask_babel import lazy_gettext as _
-from flask import g, redirect
-from markupsafe import Markup
-from hiddifypanel.auth import login_required
-from flask_admin.actions import action
-from flask_admin.contrib.sqla import form, filters as sqla_filters, tools
+
+from flask import redirect
 from flask_admin import expose
-from hiddifypanel.panel import  custom_widgets
+from flask_admin.actions import action
+from flask_admin.contrib.sqla import tools
+from flask_babel import lazy_gettext as _
+from markupsafe import Markup
 
 # Define a custom field type for the related domains
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.models import *
+from hiddifypanel.panel import custom_widgets
+from hiddifypanel.panel.admin.adminlte import AdminLTEModelView
 
-from wtforms.widgets import TextArea
-import json
 
 class ProxyDetailsAdmin(AdminLTEModelView):
     list_template = 'model/proxydetail_list.html'
@@ -32,8 +30,8 @@ class ProxyDetailsAdmin(AdminLTEModelView):
     }
     @expose('reset_proxies')
     def reset_proxies(self):
-        from hiddifypanel.panel.init_db import get_proxy_rows_v1
         from hiddifypanel.database import db
+        from hiddifypanel.panel.init_db import get_proxy_rows_v1
         db.session.bulk_save_objects(get_proxy_rows_v1())
         db.session.commit()
         hutils.flask.flash((_('config.validation-success-no-reset')), 'success')  # type: ignore
@@ -74,7 +72,7 @@ class ProxyDetailsAdmin(AdminLTEModelView):
         pass
 
     def is_accessible(self):
-        if login_required(roles={Role.super_admin, Role.admin})(lambda: True)() != True:
+        if not login_required(roles={Role.super_admin, Role.admin})(lambda: True)():
             return False
         return True
     def _params_formatter(view, context, model, name):

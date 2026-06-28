@@ -1,7 +1,7 @@
-from flask import current_app as app
-from flask import g
-from flask.views import MethodView
 from apiflask import abort
+from flask import current_app as app
+from flask.views import MethodView
+
 from hiddifypanel.auth import login_required
 from hiddifypanel.models import *
 

@@ -2,13 +2,11 @@ import json
 import os
 import re
 
+import redis
 import requests
+from hiddifypanel.models import ConfigEnum, User, hconfig
 
 from .abstract_driver import DriverABS
-from hiddifypanel.models import User, hconfig, ConfigEnum
-from hiddifypanel.panel.run_commander import Command, commander
-import redis
-
 
 USERS_USAGE = "tele:users-usage"
 
@@ -89,18 +87,18 @@ class TelemtApi(DriverABS):
     def __sync_local_usages(self) -> dict:
         local_usage = self.__get_local_usage()
         tg_usage = self.__get_tg_usages()
-        
+
         res = {}
         # remove local usage that is removed from wg usage
         for local_uuid in local_usage.copy().keys():
             if local_uuid not in tg_usage:
                 del local_usage[local_uuid]
 
-        
+
         uuid_map = self.__convert_tg_to_uuid(tg_usage.keys())
         for tg_uuid, tg_usage in tg_usage.items():
             uuid = uuid_map.get(tg_uuid)
-            
+
             if not local_usage.get(tg_uuid):
                 local_usage[tg_uuid] = {"uuid": uuid, "usage": tg_usage}
                 continue

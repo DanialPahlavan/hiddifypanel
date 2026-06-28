@@ -1,26 +1,23 @@
-import ipaddress
-from typing import Literal
-from hiddifypanel.auth import login_required, current_account
-
-from hiddifypanel.hutils.flask import hurl_for
-from hiddifypanel.models import *
 import re
-from flask import g  # type: ignore
-from markupsafe import Markup
+from typing import Literal
 
+from flask import g  # type: ignore
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
-from hiddifypanel.panel.run_commander import Command, commander
+from loguru import logger
+from markupsafe import Markup
+from pydantic import BaseModel, Field
 from wtforms.validators import Regexp, ValidationError
 
-from hiddifypanel.models import *
-from hiddifypanel.panel import hiddify, custom_widgets
-from .adminlte import AdminLTEModelView
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.hutils.flask import hurl_for
+from hiddifypanel.models import *
+from hiddifypanel.panel import custom_widgets, hiddify
+from hiddifypanel.panel.run_commander import Command, commander
 
-from loguru import logger
-from flask import current_app
-from pydantic import BaseModel, Field
+from .adminlte import AdminLTEModelView
+
 # Define a custom field type for the related domains
 
 
@@ -32,7 +29,7 @@ from pydantic import BaseModel, Field
 
 class DnsTT(BaseModel):
     mtu: int = Field(0, description="maximum size of DNS responses (0-> use default 1232)")
-    
+
     keepalive: int = Field(0, description='keepalive ping interval in seconds; must be less than idle-timeout (0-> use default 2s)', ge=0,le=100)
     idle_timeout:int = Field(0, description='session idle timeout in seconds; tears down sessions with no data within this period (0-> use default 10 seconds)', ge=0,le=100)
     clientid_size:int=Field(0, description="client ID size in bytes (ignored when dnstt_compat is true) (0-> use default 2)")
@@ -40,7 +37,7 @@ class DnsTT(BaseModel):
     record_type:Literal["","txt", "cname", "a", "aaaa", "mx", "ns", "srv"] =Field("",description='DNS record type for downstream data (txt, cname, a, aaaa, mx, ns, srv) (""->default "txt")')
     max_qname_len: int= Field(0, description='maximum total QNAME length in wire format (253 per RFC 1035) (0->default 101)')
     open_stream_timeout: int = Field(0, description='timeout for opening an smux stream (e.g. 500ms, 3s) (0->default "10s")')
-    
+
 
 class DomainAdmin(AdminLTEModelView):
     # edit_modal = False
@@ -60,7 +57,7 @@ class DomainAdmin(AdminLTEModelView):
             'rows': 100,
             'style': 'font-family: monospace; direction:ltr'
         },
-        
+
     }
     column_descriptions = dict(
         domain=_("domain.description"),
@@ -73,7 +70,7 @@ class DomainAdmin(AdminLTEModelView):
         grpc=_('grpc-proxy.description'),
         download_domain=_('download_domain.description'),
         resolve_ip=_("domain.resolveip.description")
-        
+
     )
     # create_modal = True
     can_export = False
@@ -81,9 +78,9 @@ class DomainAdmin(AdminLTEModelView):
 
     form_args = {
         'mode': {'enum': DomainType},
-        
+
         'show_domains': {
-            'query_factory': lambda: Domain.query.filter(     Domain.sub_link_only == False),
+            'query_factory': lambda: Domain.query.filter(     not Domain.sub_link_only),
         },
         'domain': {
             'validators': [
@@ -114,7 +111,7 @@ class DomainAdmin(AdminLTEModelView):
     }
 
     form_columns = ['mode', 'domain', 'alias', 'servernames', 'cdn_ip', 'resolve_ip', 'show_domains', 'download_domain',"extra_params"]
-    
+
     def _domain_admin_link(view, context, model, name):
         if hiddify.is_fake_domain(model):
             return Markup(f"<span class='badge'>{model.domain}</span>")
@@ -195,7 +192,7 @@ class DomainAdmin(AdminLTEModelView):
             raise ValidationError(_("Domain can not be resolved! there is a problem in your domain"))
 
         cloudflare_updated=self._update_cloudflare(model, ipv4_list,ipv6_list)
-        
+
         if not cloudflare_updated:
             self._validate_domain_ips(model, server_ips)
 
@@ -203,34 +200,34 @@ class DomainAdmin(AdminLTEModelView):
         if  model.mode == DomainType.direct and model.cdn_ip:
             model.cdn_ip = ""
             raise ValidationError(_("Specifying CDN IP is only valid for CDN mode"))
-            
+
         if model.mode == DomainType.fake and not model.cdn_ip:
             model.cdn_ip = str(server_ips[0])
-            
+
         if model.cdn_ip:
             try:
                 hutils.network.auto_ip_selector.get_clean_ip(str(model.cdn_ip))
             except Exception:
                 raise ValidationError(_("Error in auto cdn format"))
-                    
+
         # Update show domains
         if len(model.show_domains) == Domain.query.count():
             model.show_domains = []
-                
+
         # Handle mode-specific settings
         if model.mode == DomainType.old_xtls_direct and not hconfig(ConfigEnum.xtls_enable):
             set_hconfig(ConfigEnum.xtls_enable, True)
             hutils.proxy.get_proxies().invalidate_all()
         elif "reality" in  model.mode:
             self._validate_reality_settings(model, server_ips)
-                
+
             # Signal config update if needed
         old_db_domain = Domain.by_domain(model.domain)
         if is_created or not old_db_domain or old_db_domain.mode != model.mode:
             # return hiddify.reinstall_action(complete_install=False, domain_changed=True)
             hutils.flask.flash_config_success(restart_mode=ApplyMode.apply_config, domain_changed=True)
 
-            
+
 
     def _update_cloudflare(self, model, ipv4_list,ipv6_list):
         if hconfig(ConfigEnum.cloudflare) and model.mode not in [DomainType.fake, DomainType.relay, DomainType.reality]:
@@ -299,14 +296,14 @@ class DomainAdmin(AdminLTEModelView):
         for td in Domain.query.filter(Domain.mode.in_([DomainType.reality,DomainType.special_reality_xhttp,DomainType.special_reality_grpc,DomainType.special_reality_tcp]), Domain.domain != model.domain).all():
             # print(td)
             if td.servernames and (model.domain in td.servernames.split(",")):
-                raise ValidationError(_("You have used this domain in: ") + _(f"config.reality_server_names.label") + td.domain)
+                raise ValidationError(_("You have used this domain in: ") + _("config.reality_server_names.label") + td.domain)
 
         if is_created and Domain.query.filter(Domain.domain == model.domain, Domain.child_id == model.child_id).count() > 1:
             raise ValidationError(_("You have used this domain in: "))
 
     def _validate_domain_ips(self, model, server_ips):
         """Validate domain IP resolution and matching"""
-        
+
         # Skip validation for wildcard or empty domains
         if (model.domain.startswith('*') or not model.domain) and model.mode not in [DomainType.direct]:
             return True
@@ -320,36 +317,36 @@ class DomainAdmin(AdminLTEModelView):
         except Exception as e:
             logger.error(f"Error resolving domain {model.domain}: {str(e)}")
             raise ValidationError(_("Domain cannot be resolved! Please check DNS settings"))
-        
+
         # Validate resolution success
         if not dips:
             raise ValidationError(_("Domain cannot be resolved! Please check DNS settings"))
-        
+
         # Check IP matching based on mode
         domain_ip_matches_server = any(ip in dips for ip in server_ips)
         server_ips_str = ', '.join(map(str, server_ips))
         dips_str = ', '.join(map(str, dips))
-    
+
         if not domain_ip_matches_server and model.mode in [DomainType.direct]:
             raise ValidationError(
                 __("Domain IP=%(domain_ip)s is not matched with your ip=%(server_ip)s which is required in direct mode",
                     server_ip=server_ips_str, domain_ip=dips_str))
-                
+
         if domain_ip_matches_server and model.mode in [DomainType.cdn, DomainType.relay, DomainType.fake, DomainType.auto_cdn_ip]:
             raise ValidationError(
                 __("In CDN mode, Domain IP=%(domain_ip)s should be different to your ip=%(server_ip)s",
                     server_ip=server_ips_str, domain_ip=dips_str))
-                
+
         return True
-    
-        
+
+
     # def after_model_change(self,form, model, is_created):
     #     if model.show_domains.count==0:
     #         db.session.bulk_save_objects(ShowDomain(model.id,model.id))
 
     def on_model_delete(self, model):
         if len(Domain.query.all()) <= 1:
-            raise ValidationError(f"at least one domain should exist")
+            raise ValidationError("at least one domain should exist")
         if hconfig(ConfigEnum.cloudflare) and model.mode not in [DomainType.fake, DomainType.reality, DomainType.relay] and "special" not in model.mode:
             if not hutils.network.cf_api.delete_dns_record(model.domain):
                 hutils.flask.flash(_('cf-delete.failed'), 'warning')  # type: ignore
@@ -370,7 +367,7 @@ class DomainAdmin(AdminLTEModelView):
             hutils.node.run_node_op_in_bg(hutils.node.child.sync_with_parent, *[hutils.node.child.SyncFields.domains])
 
     def is_accessible(self):
-        if login_required(roles={Role.super_admin, Role.admin})(lambda: True)() != True:
+        if not login_required(roles={Role.super_admin, Role.admin})(lambda: True)():
             return False
         return True
 

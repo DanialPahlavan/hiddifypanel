@@ -1,11 +1,11 @@
 from apiflask import abort
-from hiddifypanel.database import db
 from flask import current_app as app
 from flask.views import MethodView
 from loguru import logger
 
-from hiddifypanel.models import *
 from hiddifypanel.auth import login_required
+from hiddifypanel.database import db
+from hiddifypanel.models import *
 
 from .schema import RegisterInputSchema, RegisterOutputSchema
 

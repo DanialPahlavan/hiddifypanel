@@ -1,12 +1,15 @@
 
-from flask import g, redirect, request, session
-from hiddifypanel.hutils.flask import hurl_for
-from flask_login.utils import _get_user
 from functools import wraps
-from hiddifypanel.models import *
+
 from apiflask import abort as json_abort
-from hiddifypanel import hutils
+from flask import g, redirect, request, session
+from flask_login.utils import _get_user
 from werkzeug.local import LocalProxy
+
+from hiddifypanel import hutils
+from hiddifypanel.hutils.flask import hurl_for
+from hiddifypanel.models import *
+
 current_account: "BaseAccount" = LocalProxy(lambda: _get_user())
 
 
@@ -100,7 +103,7 @@ def login_user(user: AdminUser | User, remember=False, duration=None, force=Fals
 def login_required(roles: set[Role] | None = None, node_auth: bool = False):
 
     def decorator(func):
-        from flask import has_app_context, current_app
+        from flask import current_app, has_app_context
         # Conditionally apply x if has_app_context() is true
         if has_app_context():
             func = current_app.doc(security='Hiddify-API-Key')(func)

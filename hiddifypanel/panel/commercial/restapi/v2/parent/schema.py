@@ -1,8 +1,8 @@
-from apiflask import fields, Schema
+from apiflask import Schema, fields
 from marshmallow import ValidationError
 
-from hiddifypanel.models import DomainType, ProxyProto, ProxyL3, ProxyTransport, ProxyCDN, ConfigEnum, ChildMode
-from hiddifypanel.panel.commercial.restapi.v2.admin.schema import UserSchema, AdminSchema
+from hiddifypanel.models import ChildMode, ConfigEnum, DomainType, ProxyCDN, ProxyL3, ProxyProto, ProxyTransport
+from hiddifypanel.panel.commercial.restapi.v2.admin.schema import AdminSchema, UserSchema
 
 
 def hconfig_key_validator(value):

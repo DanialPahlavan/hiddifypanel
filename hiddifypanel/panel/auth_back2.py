@@ -1,14 +1,21 @@
-from flask_login import LoginManager, current_user, user_accessed, user_logged_in, COOKIE_NAME, AUTH_HEADER_NAME, logout_user
-from flask import g, redirect, request, session
-from hiddifypanel.hutils.flask import hurl_for
-from flask_login.utils import _get_user
-from flask import current_app
 from functools import wraps
-from apiflask import abort
 
-from hiddifypanel.models import AdminUser, User, Role, AccountType
-import hiddifypanel.panel.hiddify as hiddify
+from apiflask import abort
+from flask import current_app, g, redirect, request, session
+from flask_login import (
+    AUTH_HEADER_NAME,
+    COOKIE_NAME,
+    LoginManager,
+    current_user,
+    logout_user,
+    user_accessed,
+    user_logged_in,
+)
+from flask_login.utils import _get_user
+
 from hiddifypanel import hutils
+from hiddifypanel.hutils.flask import hurl_for
+from hiddifypanel.models import AccountType, AdminUser, Role, User
 
 
 class CustumLoginManager(LoginManager):
@@ -53,8 +60,8 @@ class CustumLoginManager(LoginManager):
         if user is None:
             config = current_app.config
             cookie_name = config.get("REMEMBER_COOKIE_NAME", COOKIE_NAME)
-            header_name = config.get("AUTH_HEADER_NAME", AUTH_HEADER_NAME)
-            has_cookie = (
+            config.get("AUTH_HEADER_NAME", AUTH_HEADER_NAME)
+            (
                 cookie_name in request.cookies and session.get("_remember") != "clear"
             )
             # if header_name in request.headers:
@@ -74,12 +81,10 @@ class CustumLoginManager(LoginManager):
             return
 
         account = None
-        is_api_call = False
 
         if hutils.flask.is_api_call(request.path):
             if apikey := hutils.auth.get_apikey_from_auth_header(auth_header):
                 account = User.by_uuid(apikey) or AdminUser.by_uuid(apikey)
-                is_api_call = True
         else:
             uname = request.authorization.username
             pword = request.authorization.password

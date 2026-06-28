@@ -1,14 +1,25 @@
-from collections import defaultdict
-import ipaddress
-from flask import current_app, request, g
-import glob
+import json
 import random
 import re
-import json
+from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address
-from hiddifypanel.cache import cache
-from hiddifypanel.models import Proxy, ProxyProto, ProxyL3, ProxyTransport, ProxyCDN, Domain, DomainType, ConfigEnum, hconfig, get_hconfigs
+
+from flask import g, request
+
 from hiddifypanel import hutils
+from hiddifypanel.cache import cache
+from hiddifypanel.models import (
+    ConfigEnum,
+    Domain,
+    DomainType,
+    Proxy,
+    ProxyCDN,
+    ProxyL3,
+    ProxyProto,
+    ProxyTransport,
+    get_hconfigs,
+    hconfig,
+)
 
 
 def get_ssh_hostkeys(hconfigs, dojson=False) -> list[str] | str:
@@ -28,15 +39,15 @@ def is_proxy_valid(proxy: Proxy, domain_db: Domain, port: int) -> dict | None:
     l3 = proxy.l3
     if proxy.proto==ProxyProto.naive and not domain_db.need_valid_ssl:
         return {'name': name, 'msg': "naive only supports valid cert", 'type': 'error', 'proto': proxy.proto}
-    
+
     if proxy.proto!=ProxyProto.dnstt and domain_db.mode==DomainType.dnstt:
         return {'name': name, 'msg': "dnstt domain only works with dnstt protocol", 'type': 'error', 'proto': proxy.proto}
-    
+
 
     if proxy.proto not in {ProxyProto.mieru,ProxyProto.dnstt} and not port:
         return {'name': name, 'msg': "port not defined", 'type': 'error', 'proto': proxy.proto}
     if proxy.proto==ProxyProto.naive and not domain_db.need_valid_ssl:
-        return {'name': name, 'msg': "naive only supports valid cert", 'type': 'error', 'proto': proxy.proto}    
+        return {'name': name, 'msg': "naive only supports valid cert", 'type': 'error', 'proto': proxy.proto}
     if "reality" not in l3 and 'reality' in domain_db.mode:
         return {'name': name, 'msg': "1reality proxy not in reality domain", 'type': 'debug', 'proto': proxy.proto}
 
@@ -82,7 +93,7 @@ def is_proxy_valid(proxy: Proxy, domain_db: Domain, port: int) -> dict | None:
     if l3 == "http" and proxy.proto in [ProxyProto.ss, ProxyProto.ssr]:
         return {'name': name, 'msg': "http and ss or ssr???", 'type': 'warning', 'proto': proxy.proto}
 
-    return 
+    return
 
 
 def get_port(proxy: Proxy, hconfigs: dict, domain_db: Domain, ptls: int, phttp: int, pport: int | None) -> int:
@@ -128,14 +139,14 @@ def ports_to_ranges(csv_ports: str) -> list[str]:
         if port == prev + 1:
             prev = port
         else:
-            
+
             # if start == prev:
             #     ranges.append(str(start))
             # else:
             ranges.append(f"{start}-{prev}")
             start = prev = port
 
-    
+
     # if start == prev:
     #     ranges.append(str(start))
     # else:
@@ -309,18 +320,18 @@ split_pattern = re.compile(r'[ \t\r\n;,]+')
 
 
 def sni_host_server_extractor(domain_db: Domain, hconfigs):
-    
+
     server=sni=host = domain_db.domain.replace("*", hutils.random.get_random_string(5, 15))
     is_cdn = domain_db.mode in [DomainType.cdn, DomainType.auto_cdn_ip]
     if auto_ip:=domain_db.auto_cdn_ip():
         server=auto_ip[0]
     elif 'special' in domain_db.mode.value or domain_db.mode in [DomainType.fake]:
         server=hutils.network.get_direct_host_or_ip(4)
-    
+
     if domain_db.resolve_ip:
         server = str(random_or_none(hutils.network.get_domain_ips_cached(server)) or server)
 
-    
+
     allow_insecure=not domain_db.need_valid_ssl
     if all_snis := split_pattern.split((domain_db.servernames or "").strip()):
         sni = random_or_none(all_snis) or sni
@@ -328,10 +339,10 @@ def sni_host_server_extractor(domain_db: Domain, hconfigs):
             allow_insecure=False
             if hconfigs[ConfigEnum.core_type] == "singbox": #TODO
                 sni = all_snis[0]
-            
-        else: 
+
+        else:
             allow_insecure=True
-    
+
 
     base = {
         'sni': sni,
@@ -355,19 +366,17 @@ def sni_host_server_extractor(domain_db: Domain, hconfigs):
 def put_default_header(params:dict):
     if not isinstance(params.get('headers'),dict):
         params['headers']={}
-        
+
     if not params['headers'].get('User-Agent'):
         params['headers']['User-Agent']=hconfig(ConfigEnum.default_useragent_string)
     if not params['headers'].get('Pragma'):
         params['headers']['Pragma']="no-cache"
-    
+
 
 
 def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=443, pport: int | None = None) -> dict:
 
     l3 = proxy.l3
-    domain = domain_db.domain
-    child_id = domain_db.child_id
     name = proxy.name
     port = hutils.proxy.get_port(proxy, hconfigs, domain_db, ptls, phttp, pport)
 
@@ -380,10 +389,10 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
     else:
         alpn="http/1.1"
         if proxy.l3 in ['tls_h2'] or proxy.transport in ["grpc", 'h2']:
-            alpn = "h2"    
+            alpn = "h2"
         if proxy.l3 == 'tls_h2_h1':
-            alpn='h2,http/1.1' 
-        
+            alpn='h2,http/1.1'
+
         if proxy.l3 in [ProxyL3.h3_quic]:
             alpn = "h3"
 
@@ -396,9 +405,9 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
         # 'cdn': is_cdn,
         # 'mode': "CDN" if is_cdn else "direct",
         'l3': l3,
-        
+
         'port': port,
-        
+
         'uuid': str(g.account.uuid),
         'proto': proxy.proto,
         'transport': proxy.transport,
@@ -431,14 +440,14 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
         base["quic"]=proxy.l3 in [ProxyL3.h3_quic]
         base['password']="h"
         return base
-    
-    if hconfigs.get(ConfigEnum.tls_ech_enable) and not proxy.l3 in {ProxyL3.reality}:
+
+    if hconfigs.get(ConfigEnum.tls_ech_enable) and proxy.l3 not in {ProxyL3.reality}:
         if ech:=hutils.network.get_ech_info(base.get('sni')):
             base['ech'] = ech
 
     if base['proto'] in {ProxyProto.mieru}:
         base["password"]="h"
-        
+
         base['tcp_ports']=ports_to_ranges(hconfigs.get(ConfigEnum.mieru_tcp_ports)) if proxy.transport == ProxyTransport.tcp else []
         base['udp_ports']=ports_to_ranges(hconfigs.get(ConfigEnum.mieru_udp_ports)) if proxy.transport == ProxyTransport.udp else []
         base['multiplexing']=hconfigs[ConfigEnum.mieru_multiplexing]
@@ -450,20 +459,20 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
         base['download'] = sni_host_server_extractor(domain_db.download_domain,hconfigs)
     else:
         base['download']=domain_data
-        
+
     if 'download' not in base['params']:
         base['params']['download']={}
     base['download']['params']=base['params']['download']
     if base['download']['cdn'] or l3 == "http":
         put_default_header(base['download']['params'])
-    if hconfigs.get(ConfigEnum.tls_ech_enable) and not proxy.l3 in {ProxyL3.reality}:
+    if hconfigs.get(ConfigEnum.tls_ech_enable) and proxy.l3 not in {ProxyL3.reality}:
         if ech:=hutils.network.get_ech_info(base['download'].get('sni')):
             base['download']['ech'] = ech
     base['download']['alpn']=base['params']['download'].get('alpn',alpn)
 
-        
 
-            
+
+
     if proxy.proto in ['tuic', 'hysteria2']:
         base['alpn'] = "h3"
         if proxy.proto == 'hysteria2':
@@ -485,7 +494,7 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
     if proxy.proto in [ProxyProto.vmess]:
         base['cipher'] = "auto"  # "chacha20-poly1305"
 
-    
+
     if l3 == "http" and not hconfigs[ConfigEnum.http_proxy_enable]:
         return {'name': name, 'msg': "http but http is disabled ", 'type': 'debug', 'proto': proxy.proto}
 
@@ -563,19 +572,19 @@ def make_proxy(hconfigs: dict, proxy: Proxy, domain_db: Domain, phttp=80, ptls=4
         base['transport'] = 'tcp'
         base['path'] = f'/{path[base["proto"]]}{hconfigs[ConfigEnum.path_tcp]}'
         return base
-    
+
     if proxy.transport in ["ws", "WS"]:
         base['transport'] = 'ws'
         base['path'] = f'/{path[base["proto"]]}{hconfigs[ConfigEnum.path_ws]}'
-        
+
         return base
 
     if proxy.transport in [ProxyTransport.httpupgrade]:
         base['transport'] = 'httpupgrade'
         base['path'] = f'/{path[base["proto"]]}{hconfigs[ConfigEnum.path_httpupgrade]}'
-        
+
         return base
-    
+
     if proxy.transport in [ProxyTransport.xhttp]:
         base['transport'] = 'xhttp'
         base['path'] = f'/{path[base["proto"]]}{hconfigs[ConfigEnum.path_xhttp]}'
@@ -616,7 +625,7 @@ def all_element_in_first_dict_is_exist_in_second(fdict,sdict):
                 return False
         if sdict.get(k,v)!=v:
             return False
-        
+
     return True
 
 class ProxyJsonEncoder(json.JSONEncoder):

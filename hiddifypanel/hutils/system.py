@@ -1,5 +1,6 @@
-import psutil
 import os
+
+import psutil
 
 
 def get_folder_size(folder_path: str) -> int:

@@ -1,16 +1,17 @@
-from flask import render_template, request, g
 import json
+
+from flask import g, render_template, request
 
 from hiddifypanel import hutils
 from hiddifypanel.hutils.proxy.xrayjson import to_xray
-from hiddifypanel.models import ProxyProto, ProxyTransport, Domain, ConfigEnum
+from hiddifypanel.models import ConfigEnum, Domain, ProxyProto, ProxyTransport
 
 
 def configs_as_json(domains: list[Domain], **kwargs) -> dict:
-    ua = hutils.flask.get_user_agent()
+    hutils.flask.get_user_agent()
     base_config = json.loads(render_template('base_singbox_config.json.j2'))
-    allphttp = [p for p in request.args.get("phttp", "").split(',') if p]
-    allptls = [p for p in request.args.get("ptls", "").split(',') if p]
+    [p for p in request.args.get("phttp", "").split(',') if p]
+    [p for p in request.args.get("ptls", "").split(',') if p]
 
     allp = []
     for d in domains:
@@ -43,7 +44,7 @@ def configs_as_json(domains: list[Domain], **kwargs) -> dict:
         "tolerance": 200
     }
     base_config['outbounds'].insert(1, smart)
-    
+
     # if ua['is_hiddify']:
     #     res = res[:-1]+',"experimental": {}}'
     return base_config
@@ -86,7 +87,7 @@ def to_singbox(proxy: dict) -> list[dict] | dict:
     if proxy['proto']==ProxyProto.dnstt:
         add_dnstt(all_base, proxy)
         return all_base
-    
+
     base["server"] = proxy["server"]
     base["server_port"] = int(proxy["port"])
     # base['alpn'] = proxy['alpn'].split(',')
@@ -96,8 +97,8 @@ def to_singbox(proxy: dict) -> list[dict] | dict:
     if proxy["proto"] == ProxyProto.wireguard:
         add_wireguard(base, proxy)
         return all_base
-    
-    
+
+
     if proxy['proto']==ProxyProto.mieru:
         add_mieru(base, proxy)
         return all_base
@@ -194,7 +195,7 @@ def add_tls(base: dict, proxy: dict):
         base["tls"]['ech'] = {
             "enabled": True,
             "config":f"-----BEGIN ECH CONFIGS-----\\n{proxy.get("ech")}\\n-----END ECH CONFIGS-----"
-        }   
+        }
     if proxy['proto']=="naive":
         return
     if proxy['proto'] not in ["tuic", "hysteria2"] and proxy['transport']!="xhttp":
@@ -214,9 +215,9 @@ def add_tls(base: dict, proxy: dict):
             "short_id": proxy['reality_short_id']
         }
     base["tls"]['insecure'] = proxy['allow_insecure'] or (proxy["mode"] == "Fake")
-    
+
     base["tls"]["alpn"] = proxy['alpn'].split(',')
-    
+
 
 
 def add_tls_tricks(base: dict, proxy: dict):
@@ -252,7 +253,7 @@ def add_transport(base: dict, proxy: dict):
 
     if proxy['transport'] in ["xhttp"]:
         _add_xhttp_details(base,proxy)
-        
+
 
     if proxy['transport'] in [ProxyTransport.httpupgrade]:
         base["transport"] = {
@@ -285,7 +286,7 @@ def add_transport(base: dict, proxy: dict):
         }
 
 def _add_xhttp_details(base: dict, proxy: dict):
-    
+
     base["transport"] = {
             "type": "xhttp",
             "path": proxy["path"],
@@ -293,13 +294,13 @@ def _add_xhttp_details(base: dict, proxy: dict):
             'mode':proxy['xhttp_mode'],
             "headers": proxy['params'].get('headers', {})
         }
-    
-    
+
+
     if pdl:=proxy.get("download"):
         base['transport']['downloadSettings']={
             "path": proxy["path"],
             'host': pdl.get("server"),
-            "headers":pdl.get("headers")            
+            "headers":pdl.get("headers")
         }
         dls={
             'l3':proxy['l3'],
@@ -308,7 +309,7 @@ def _add_xhttp_details(base: dict, proxy: dict):
             **proxy['download']
         }
         add_tls(base['transport']['downloadSettings'],dls)
-        
+
 
 def add_dnstt(all_base:list,proxy:dict):
     all_base[0]['domain']=proxy["sni"]
@@ -326,8 +327,8 @@ def add_dnstt(all_base:list,proxy:dict):
         "tag":tag,
         "detour":all_base[0]["tag"]
     })
-    
- 
+
+
 
 def add_ssr(base: dict, proxy: dict):
 
@@ -358,7 +359,7 @@ def add_mieru(base: dict, proxy: dict):
     base['username']=proxy['uuid']
     base['password']=proxy['password']
     base['portBindings']=[]
-    
+
     for port in proxy["tcp_ports"]:
         if port:
             base['portBindings'].append({
@@ -373,12 +374,12 @@ def add_mieru(base: dict, proxy: dict):
                 "port":0 if "-" in port else int(port),
                 "portRange":port if "-" in port else ""
             })
-            
-                
-    
+
+
+
 def add_wireguard(base: dict, proxy: dict):
     if hutils.flask.is_client_version(hutils.flask.ClientVersion.singbox, 1, 13, 0):
-        
+
         base["private_key"] = proxy["wg_pk"]
         base["mtu"] = 1380
         base["address"] = [f'{proxy["wg_ipv4"]}/32']
@@ -398,7 +399,7 @@ def add_wireguard(base: dict, proxy: dict):
                 "fake_packet":{
                     "enabled":True,
                     "count":proxy["wg_noise_trick"]
-                } 
+                }
             }
 
     else:

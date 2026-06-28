@@ -1,31 +1,29 @@
-from flask_classful import FlaskView, route
-from hiddifypanel import hutils
-from hiddifypanel.auth import login_required, current_account, login_user, logout_user, login_by_uuid
-from flask import redirect, request, g, render_template, flash, jsonify
-from hiddifypanel.hutils.flask import hurl_for
-from flask import current_app as app
-from flask_babel import lazy_gettext as _
-from apiflask import abort
-import hiddifypanel.panel.hiddify as hiddify
-from hiddifypanel.models import *
-
-from flask_wtf import FlaskForm
-import wtforms as wtf
-
 import re
+
+import wtforms as wtf
+from flask import g, jsonify, redirect, render_template, request
+from flask_babel import lazy_gettext as _
+from flask_classful import FlaskView, route
+from flask_wtf import FlaskForm
+
+import hiddifypanel.panel.hiddify as hiddify
+from hiddifypanel import hutils
+from hiddifypanel.auth import current_account, login_by_uuid, logout_user
+from hiddifypanel.hutils.flask import hurl_for
+from hiddifypanel.models import *
 
 
 class LoginForm(FlaskForm):
-    secret_textbox = wtf.fields.StringField(_(f'login.secret.label'), [wtf.validators.Regexp(
+    secret_textbox = wtf.fields.StringField(_('login.secret.label'), [wtf.validators.Regexp(
         "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", re.IGNORECASE, _('config.invalid_uuid'))], default='',
-        description=_(f'login.secret.description'), render_kw={
+        description=_('login.secret.description'), render_kw={
         'required': "",
         'pattern': "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
         'message': _('config.invalid_uuid')
     })
 
-    password_textbox = wtf.fields.PasswordField(_(f'login.password.label'), default='',
-        description=_(f'login.password.description'), render_kw={    })
+    password_textbox = wtf.fields.PasswordField(_('login.password.label'), default='',
+        description=_('login.password.description'), render_kw={    })
     submit = wtf.fields.SubmitField(_('login.button'))
 
 
@@ -33,7 +31,7 @@ class LoginView(FlaskView):
 
     # @route("/")
     def index(self, force=None, next=None):
-        force_arg = request.args.get('force')
+        request.args.get('force')
         redirect_arg = request.args.get('redirect')
         username_arg = (request.args.get('user') or '').split("?")[0]
         if not current_account:
@@ -94,7 +92,6 @@ class LoginView(FlaskView):
         if g.user_agent['is_browser'] and hutils.flask.is_client_proxy_path():
             return redirect(hurl_for('client.UserView:index'))
 
-        from hiddifypanel.panel.user import UserView
         # return redirect(url_for("user.")) UserView().auto_sub()
 
     # @route('/<uuid:uuid>/<path:path>')
@@ -142,7 +139,7 @@ class LoginView(FlaskView):
             "theme_color": "#f2f4fb",
             "background_color": "#1a1b21",
             "display": "standalone",
-            "scope": f"/",
+            "scope": "/",
             "start_url": hiddify.get_account_panel_link(account, domain) + "?pwa=true",
             "description": "Hiddify, for a free Internet",
             "orientation": "any",

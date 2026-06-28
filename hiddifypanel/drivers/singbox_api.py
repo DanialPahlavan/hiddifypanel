@@ -1,12 +1,13 @@
-import os
-import xtlsapi
-from hiddifypanel.models import *
-from .abstract_driver import DriverABS
-from flask import current_app
 import json
+import os
 from collections import defaultdict
+
+import xtlsapi
 from hiddifypanel.cache import cache
+from hiddifypanel.models import *
 from loguru import logger
+
+from .abstract_driver import DriverABS
 
 
 class SingboxApi(DriverABS):
@@ -41,7 +42,7 @@ class SingboxApi(DriverABS):
     def get_all_usage(self):
         xray_client = self.get_singbox_client()
         usages = xray_client.stats_query('user', reset=True)
-        
+
         res = defaultdict(int)
         for use in usages:
             if "user>>>" not in use.name:

@@ -1,21 +1,21 @@
-from hiddifypanel.auth import login_required
-
-from wtforms.validators import Regexp
-from hiddifypanel.models import *
-from wtforms.validators import Regexp, ValidationError
-from .adminlte import AdminLTEModelView
-from flask_babel import lazy_gettext as _
-from wtforms.validators import Regexp
-from flask_babel import gettext as __
-from flask import request  # type: ignore
-from markupsafe import Markup
-
-from flask import g
 import datetime
-from wtforms import PasswordField, SelectField
 
-from hiddifypanel.panel import hiddify
+from flask import (
+    g,
+    request,  # type: ignore
+)
+from flask_babel import gettext as __
+from flask_babel import lazy_gettext as _
+from markupsafe import Markup
+from wtforms import PasswordField, SelectField
+from wtforms.validators import Regexp, ValidationError
+
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.models import *
+from hiddifypanel.panel import hiddify
+
+from .adminlte import AdminLTEModelView
 
 
 class AdminModeField(SelectField):
@@ -119,7 +119,6 @@ class AdminstratorAdmin(AdminLTEModelView):
         # onlines=[p for p in  users  if p.last_online and p.last_online>last_day]
         # return Markup(f"<a class='btn btn-xs btn-default' href='{hurl_for('flask.user.index_view',admin_id=model.id)}'> {_('Online')}: {onlines}</a>")
         rate = round(u * 100 / (t + 0.000001))
-        state = "danger" if u >= t else ('warning' if rate > 80 else 'success')
         color = "#ff7e7e" if u >= t else ('#ffc107' if rate > 80 else '#9ee150')
         return Markup(f"""
         <div class="progress progress-lg position-relative" style="min-width: 100px;">
@@ -135,7 +134,6 @@ class AdminstratorAdmin(AdminLTEModelView):
             return f"{u} / ∞"
         t = model.max_users
         rate = round(u * 100 / (t + 0.000001))
-        state = "danger" if u >= t else ('warning' if rate > 80 else 'success')
         color = "#ff7e7e" if u >= t else ('#ffc107' if rate > 80 else '#9ee150')
         return Markup(f"""
         <div class="progress progress-lg position-relative" style="min-width: 100px;">
@@ -154,7 +152,7 @@ class AdminstratorAdmin(AdminLTEModelView):
         t = model.max_active_users
         rate = round(active_count * 100 / (t + 0.000001))
         color = "#ff7e7e" if active_count >= t else ('#ffc107' if rate > 80 else '#9ee150')
-        
+
         return Markup(f"""
         <div class="progress progress-lg position-relative" style="min-width: 100px;">
           <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {rate}%;background-color: {color};" aria-valuenow="{rate}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -177,7 +175,7 @@ class AdminstratorAdmin(AdminLTEModelView):
 
     # @login_required(roles={Role.super_admin, Role.admin})
     def is_accessible(self):
-        if login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)() != True:
+        if not login_required(roles={Role.super_admin, Role.admin, Role.agent})(lambda: True)():
             return False
         return True
 
@@ -208,7 +206,7 @@ class AdminstratorAdmin(AdminLTEModelView):
         # else:
         #     model.parent_admin_id=1
         #     model.parent_admin=AdminUser.query.filter(AdminUser.id==1).first()
-        
+
         if model.id != 1 and model.parent_admin is None:
             model.parent_admin_id = g.account.id
             model.parent_admin = g.account
@@ -217,7 +215,7 @@ class AdminstratorAdmin(AdminLTEModelView):
             raise ValidationError("Sub-Admin can not have more power!!!!")
         if g.account.mode == AdminMode.agent and model.mode != AdminMode.agent:
             raise ValidationError("Sub-Admin can not have more power!!!!")
-        
+
         if not model.new_password and is_created:
             raise ValidationError("Password for new admin is needed.")
         if model.new_password:

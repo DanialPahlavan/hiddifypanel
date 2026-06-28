@@ -1,12 +1,14 @@
+import datetime
+
 from flask_babel import force_locale
 from flask_babel import gettext as _
 from telebot import types
-import datetime
 
-from hiddifypanel.database import db
-from hiddifypanel.panel import hiddify
-from hiddifypanel.models import *
 from hiddifypanel import hutils
+from hiddifypanel.database import db
+from hiddifypanel.models import *
+from hiddifypanel.panel import hiddify
+
 from . import bot
 
 
@@ -46,7 +48,7 @@ def admin_keyboard_main():
     return types.InlineKeyboardMarkup(keyboard=[[
         types.InlineKeyboardButton(
             text=_("Create Package"),
-            callback_data=f'create_package'
+            callback_data='create_package'
         )
     ]
     ]
@@ -107,7 +109,7 @@ def admin_keyboard_domain(old_action):
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith(f'create_package'))
+@bot.callback_query_handler(func=lambda call: call.data.startswith('create_package'))
 def create_package(call):  # <- passes a CallbackQuery type object to your function
     admin = get_admin_by_tgid(call.message)
     if not (admin):

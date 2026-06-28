@@ -1,19 +1,19 @@
-from flask import render_template, request, jsonify, g
-from flask_wtf.file import FileField, FileRequired
-from flask_bootstrap import SwitchField
-from flask_babel import gettext as _
-from flask_classful import FlaskView
-from urllib.parse import urlparse
-from flask_wtf import FlaskForm
-from datetime import datetime
-import wtforms as wtf
 import json
+from datetime import datetime
+from urllib.parse import urlparse
 
+import wtforms as wtf
+from flask import g, jsonify, render_template, request
+from flask_babel import gettext as _
+from flask_bootstrap import SwitchField
+from flask_classful import FlaskView
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
 
-from hiddifypanel.auth import login_required
-from hiddifypanel.panel import hiddify
-from hiddifypanel.models import *
 from hiddifypanel import hutils
+from hiddifypanel.auth import login_required
+from hiddifypanel.models import *
+from hiddifypanel.panel import hiddify
 
 
 class Backup(FlaskView):
