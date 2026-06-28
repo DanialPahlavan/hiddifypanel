@@ -140,43 +140,44 @@ class Domain(db.Model):
     def port_index(self):
         return self.id
 
+    def _clamp_port(self, port: int) -> int:
+        return port if 1 <= port <= 65535 else 0
+
     @property
     def internal_port_hysteria2(self):
         if self.mode not in [DomainType.direct, DomainType.relay, DomainType.fake]:
             return 0
-        # TODO: check validity of the range of the port
-        # print("child_id",self.child_id)
-        return int(hconfig(ConfigEnum.hysteria_port, self.child_id)) + self.port_index
+        # check validity of the range of the port
+        return self._clamp_port(int(hconfig(ConfigEnum.hysteria_port, self.child_id)) + self.port_index)
 
     @property
     def internal_port_dnstt(self):
         if self.mode not in [DomainType.dnstt]:
             return 0
-        # TODO: check validity of the range of the port
-        # print("child_id",self.child_id)
-        return int(5400) + self.port_index
+        # check validity of the range of the port
+        return self._clamp_port(5400 + self.port_index)
 
 
     @property
     def internal_port_tuic(self):
         if self.mode not in [DomainType.direct, DomainType.relay, DomainType.fake]:
             return 0
-        # TODO: check validity of the range of the port
-        return int(hconfig(ConfigEnum.tuic_port, self.child_id)) + self.port_index
+        # check validity of the range of the port
+        return self._clamp_port(int(hconfig(ConfigEnum.tuic_port, self.child_id)) + self.port_index)
 
     @property
     def internal_port_naive(self):
         if self.mode not in [DomainType.direct, DomainType.relay]:
             return 0
-        # TODO: check validity of the range of the port
-        return int(hconfig(ConfigEnum.naive_port, self.child_id)) + self.port_index
+        # check validity of the range of the port
+        return self._clamp_port(int(hconfig(ConfigEnum.naive_port, self.child_id)) + self.port_index)
 
     @property
     def internal_port_special(self):
         if self.mode != DomainType.reality and "special" not in self.mode.value:
             return 0
-        # TODO: check validity of the range of the port
-        return int(hconfig(ConfigEnum.special_port, self.child_id)) + self.port_index
+        # check validity of the range of the port
+        return self._clamp_port(int(hconfig(ConfigEnum.special_port, self.child_id)) + self.port_index)
 
     @classmethod
     def by_mode(cls, mode: DomainType) -> List['Domain']:

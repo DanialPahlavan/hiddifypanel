@@ -14,6 +14,9 @@ from loguru import logger
 
 
 def init_app(app: APIFlask):
+    # Initialize centralized exception logging with rotation
+    logger.add("logs/panel-error.log", rotation="10 MB", retention="7 days", level="ERROR", backtrace=True, diagnose=True)
+    
     app.jinja_env.globals['ConfigEnum'] = ConfigEnum
     app.jinja_env.globals['DomainType'] = DomainType
     app.jinja_env.globals['UserMode'] = UserMode
